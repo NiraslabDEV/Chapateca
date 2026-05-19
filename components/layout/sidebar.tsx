@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, BookOpen, Target, Wallet, Camera, Settings, HelpCircle, Lock } from 'lucide-react'
+import { Home, BookOpen, Target, Wallet, Camera, Settings, HelpCircle, Lock, LogOut } from 'lucide-react'
 import { ROLES, type RoleKey } from '@/lib/roles'
 import RoleBadge from '@/components/ui/role-badge'
 import { cn } from '@/lib/utils'
@@ -81,6 +81,11 @@ export default function Sidebar({ role }: SidebarProps) {
             </Link>
           )
         })}
+        <a href="/api/logout"
+           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all text-red-600 hover:bg-red-50">
+          <LogOut size={18} />
+          <span>Sair da Sessão</span>
+        </a>
         <div className="px-3 pt-2 text-[11px] text-ink-soft font-mono tracking-[0.04em]">
           v0.1 · Maputo
         </div>
