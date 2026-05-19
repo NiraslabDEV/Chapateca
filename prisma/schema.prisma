@@ -1,0 +1,41 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  DIRECAO
+  DAF
+  COMUNICACAO
+  CAMPO
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  image     String?
+  role      Role      @default(CAMPO)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  uploads   FileLog[]
+}
+
+model FileLog {
+  id            String    @id @default(cuid())
+  googleDriveId String    @unique
+  fileName      String
+  fileType      String    // IMAGE | VIDEO | PDF | DOCX | XLSX
+  mimeType      String
+  category      String    // FOTOS_TERRENO | FINANCEIRO | ESTRATEGIA | PROCEDIMENTOS
+  location      String?
+  activityDate  DateTime?
+  shareLink     String?
+  uploadedById  String
+  uploadedBy    User      @relation(fields: [uploadedById], references: [id])
+  createdAt     DateTime  @default(now())
+}
