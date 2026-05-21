@@ -6,13 +6,24 @@
   * { box-sizing: border-box; }
 
   html, body {
-    @apply bg-parchment text-ink font-body antialiased;
+    @apply bg-white text-ink font-body antialiased;
     font-size: 14px;
   }
 
-  ::selection {
-    @apply bg-gold-muted text-ink;
+  .dark html, .dark body {
+    @apply bg-[#0F0A1E] text-white;
   }
+
+  ::selection {
+    background: #E8652A33;
+    color: #1A0A30;
+  }
+}
+
+/* Dark mode base */
+.dark body {
+  background: #0F0A1E;
+  color: #F0ECF8;
 }
 
 @layer utilities {
@@ -39,7 +50,13 @@
   to   { transform: translateX(0); opacity: 1; }
 }
 
-.animate-page-in { animation: pageIn 0.25s ease-out; }
-.animate-card-in { animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1); }
-.animate-pop     { animation: pop 0.5s cubic-bezier(0.16,1,0.3,1); }
-.animate-toast   { animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+.animate-page-in  { animation: pageIn 0.25s ease-out; }
+.animate-card-in  { animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1); }
+.animate-pop      { animation: pop 0.5s cubic-bezier(0.16,1,0.3,1); }
+.animate-toast    { animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+.animate-slide-in { animation: slideIn 0.25s cubic-bezier(0.16,1,0.3,1); }

@@ -27,7 +27,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt">
+    <html lang="pt" suppressHydrationWarning>
+      <head>
+        {/* Previne flash de tema errado */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            var t = localStorage.getItem('chapateca-theme');
+            if (t === 'dark') document.documentElement.classList.add('dark');
+          } catch(e) {}
+        ` }} />
+      </head>
       <body className={`${dmSans.variable} ${dmSerif.variable} ${dmMono.variable}`}>
         {children}
       </body>

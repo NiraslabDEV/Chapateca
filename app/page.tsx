@@ -34,7 +34,7 @@ export default async function LoginPage({
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-         style={{ background: 'linear-gradient(135deg, #0D1F09 0%, #1C3A14 100%)' }}>
+         style={{ background: 'linear-gradient(135deg, #1A0836 0%, #461882 60%, #6B2D10 100%)' }}>
       {/* dot grid texture */}
       <div className="absolute inset-0 opacity-[0.07] pointer-events-none"
            style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
