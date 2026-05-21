@@ -407,6 +407,7 @@
       <li><a href="#partilha">Partilha com Doadores</a></li>
       <li><a href="#tarefas">Tarefas e Mensagens</a></li>
       <li><a href="#definicoes">Definições (Admin)</a></li>
+      <li><a href="#financeiro">Departamento Financeiro</a></li>
       <li><a href="#ajuda">Ajuda e Suporte</a></li>
       <li><a href="#api">Rotas de API</a></li>
       <li><a href="#roadmap">Roadmap</a></li>
@@ -929,6 +930,123 @@
       </div>
     </div>
 
+    <!-- FINANCEIRO -->
+    <div class="section" id="financeiro">
+      <div class="section-header">
+        <div class="section-icon" style="background:#F7ECEC">💰</div>
+        <h2>Departamento Financeiro</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+
+        <p class="subsection-title">Listagem de Documentos — <code>/financas</code></p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Acesso restrito</strong> — apenas Direcção (Constance, Sonia, Shadia) têm <code>access.financas = true</code>; outros utilizadores vêem o módulo bloqueado no dashboard</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Documentos reais da base de dados</strong> — lista todos os <code>FileLog</code> com <code>category = FINANCEIRO</code>, ordenados por data de referência (mais recente primeiro)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Agrupamento por ano</strong> — cada ano tem o seu separador com linha divisória</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Badges por tipo de ficheiro</strong> — PDF (vermelho), XLSX (verde), DOCX (azul); ícone de pin nos Orçamentos</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Metadados visíveis</strong> — tipo de documento, tamanho do ficheiro, período de referência, quem carregou</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Botão Ver</strong> (apenas PDF) — abre o documento inline no browser via proxy autenticado (<code>/api/drive/doc/[driveId]</code>)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Botão Baixar</strong> (todos os tipos) — download do ficheiro original com <code>Content-Disposition: attachment</code></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Banner demo</strong> — quando a DB ainda não tem documentos reais, mostra 3 entradas de exemplo a cinzento com aviso para carregar o primeiro documento real</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="subsection-title">Upload de Documentos — <code>/financas/upload</code></p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Formulário 3 passos</strong> — Seleccionar ficheiro → Detalhes → Confirmação de sucesso</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Tipos aceites</strong> — PDF, Excel (.xlsx/.xls), Word (.docx/.doc); validação de MIME type no frontend e no servidor</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Detecção automática de tipo</strong> — detecta PDF/XLSX/DOCX pelo MIME type e mostra badge colorido na pré-visualização</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Sugestão de título</strong> — preenche automaticamente o título a partir do nome do ficheiro (remove extensão e substitui _ por espaços)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">
+              <strong>Tipos de documento</strong> — selector com 6 opções:
+              <em>Orçamento, Relatório Financeiro, Extracto Bancário, Contrato, Auditoria, Outro</em>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Período de referência</strong> — selector de mês/ano (<code>type=month</code>); guardado como data de referência do documento</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Upload para Google Drive</strong> — pasta <em>Financeiro / Ano / Mês</em> criada automaticamente; driveId guardado no <code>FileLog</code></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Tamanho guardado</strong> — campo <code>fileSize</code> (bytes) registado na DB para exibição na listagem</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="subsection-title">Proxy de Documentos — <code>/api/drive/doc/[driveId]</code></p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Autenticado</strong> — verifica cookie de sessão; rejeita se role não tiver <code>access.financas</code></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Verificação de ownership</strong> — confirma na DB que o <code>driveId</code> pertence a um FileLog com <code>category = FINANCEIRO</code> antes de servir</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Modo inline</strong> — sem parâmetro, usa <code>Content-Disposition: inline</code> para o browser abrir PDF nativo</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Modo download</strong> — com <code>?download=1</code>, usa <code>Content-Disposition: attachment</code> para forçar download</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Cache privado</strong> — <code>Cache-Control: private, max-age=1800</code> para evitar re-download frequente sem expor a utilizadores não autenticados</div>
+          </div>
+        </div>
+
+        <div class="info-box" style="margin-top:16px;border-left:3px solid #8B3A3A;background:#F7ECEC">
+          <strong>Pasta no Drive:</strong> <code>Chapateca / Financeiro / [Ano] / [Mês]</code><br>
+          A pasta é criada automaticamente se não existir. Requer a variável de ambiente <code>DRIVE_FOLDER_FINANCEIRO</code> configurada no Railway.
+        </div>
+      </div>
+    </div>
+
     <!-- AJUDA -->
     <div class="section" id="ajuda">
       <div class="section-header">
@@ -1002,6 +1120,20 @@
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
             <div class="feature-text">
+              <div class="url-pill"><span class="method">POST</span>/api/upload-doc</div>
+              <em>Upload autenticado de PDF/XLSX/DOCX para Drive FINANCEIRO; cria FileLog com fileSize, docType, período</em>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">
+              <div class="url-pill"><span class="method">GET</span>/api/drive/doc/[driveId]</div>
+              <em>Proxy autenticado de documentos financeiros — inline (PDF) ou attachment (<code>?download=1</code>); verifica ownership na DB</em>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">
               <div class="url-pill"><span class="method">GET</span>/api/logout</div>
               <em>Apaga cookie de sessão e redirige para login</em>
             </div>
@@ -1053,7 +1185,7 @@
               </div>
               <div class="feature-item">
                 <div class="feature-check check-done">✓</div>
-                <div class="feature-text"><strong>FileLog</strong> — id, googleDriveId @unique, fileName, fileType, mimeType, category, activityName?, location?, activityDate?, albumId?, uploadedBy</div>
+                <div class="feature-text"><strong>FileLog</strong> — id, googleDriveId @unique, fileName, fileType, mimeType, <strong>fileSize?</strong>, category, activityName?, location? (docType em FINANCEIRO), activityDate?, albumId?, uploadedBy</div>
               </div>
               <div class="feature-item">
                 <div class="feature-check check-done">✓</div>
@@ -1106,8 +1238,8 @@
                 <div class="feature-text"><strong>Módulo Estratégia</strong> — planos estratégicos, relatórios de impacto, metas</div>
               </div>
               <div class="feature-item">
-                <div class="feature-check check-partial">~</div>
-                <div class="feature-text"><strong>Módulo Financeiro</strong> — orçamentos e relatórios financeiros (acesso DAF + Direcção)</div>
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Módulo Financeiro</strong> — upload, listagem, visualização e download de PDF/XLSX/DOCX; proxy autenticado; acesso restrito à Direcção</div>
               </div>
             </div>
           </div>
