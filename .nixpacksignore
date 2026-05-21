@@ -1,0 +1,10 @@
+node_modules
+dist
+.next
+.env
+.env.local
+json-API-Drive/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+scripts/
+logo.avif
