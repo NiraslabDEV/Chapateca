@@ -65,9 +65,10 @@ model FileLog {
   fileName      String
   fileType      String    // IMAGE | VIDEO | PDF | DOCX | XLSX
   mimeType      String
+  fileSize      Int?      // bytes
   category      String    // FOTOS_TERRENO | FINANCEIRO | ESTRATEGIA | PROCEDIMENTOS
   activityName  String?
-  location      String?
+  location      String?   // para FINANCEIRO: docType (orcamento, relatorio, etc.)
   activityDate  DateTime?
   shareLink     String?
   albumId       String?
