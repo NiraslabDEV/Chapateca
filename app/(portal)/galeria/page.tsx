@@ -7,11 +7,11 @@ import { Upload, Share2, Eye, MapPin, Calendar } from 'lucide-react'
 
 // Mock data quando não há registos na DB
 const MOCK_ALBUMS = [
-  { id: '1', fileName: 'Actividade Malhangalene', location: 'Malhangalene', activityDate: new Date('2025-06-12'), count: 14 },
-  { id: '2', fileName: 'Distribuição de Livros', location: 'Polana Caniço', activityDate: new Date('2025-06-08'), count: 8 },
-  { id: '3', fileName: 'Formação de Voluntários', location: 'Sede', activityDate: new Date('2025-06-01'), count: 22 },
-  { id: '4', fileName: 'Feira de Leitura', location: 'Maxaquene', activityDate: new Date('2025-05-25'), count: 31 },
-  { id: '5', fileName: 'Visita Chamanculo', location: 'Chamanculo', activityDate: new Date('2025-05-14'), count: 17 },
+  { id: '1', fileName: 'Actividade Malhangalene', location: 'Malhangalene', activityDate: new Date('2025-06-12'), count: 14, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
+  { id: '2', fileName: 'Distribuição de Livros', location: 'Polana Caniço', activityDate: new Date('2025-06-08'), count: 8, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
+  { id: '3', fileName: 'Formação de Voluntários', location: 'Sede', activityDate: new Date('2025-06-01'), count: 22, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
+  { id: '4', fileName: 'Feira de Leitura', location: 'Maxaquene', activityDate: new Date('2025-05-25'), count: 31, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
+  { id: '5', fileName: 'Visita Chamanculo', location: 'Chamanculo', activityDate: new Date('2025-05-14'), count: 17, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
 ]
 
 const THUMB_COLORS = [
@@ -55,6 +55,8 @@ export default async function GaleriaPage() {
         location: l.location ?? '',
         activityDate: l.activityDate ?? l.createdAt,
         count: 1,
+        uploaderName: l.uploadedBy?.name ?? 'Equipa',
+        uploaderInitials: (l.uploadedBy?.name ?? 'EQ').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase(),
       }))
     }
   } catch { /* DB não configurada ainda */ }
@@ -113,8 +115,8 @@ export default async function GaleriaPage() {
                     <span>{album.count} fotos</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-[12px] text-ink-mid">
-                    <div className="w-5 h-5 rounded-full bg-gold/80 flex items-center justify-center text-[8px] font-bold text-white">BN</div>
-                    Beatriz Nhantumbo
+                    <div className="w-5 h-5 rounded-full bg-gold/80 flex items-center justify-center text-[8px] font-bold text-white">{album.uploaderInitials}</div>
+                    {album.uploaderName}
                   </div>
                 </div>
 

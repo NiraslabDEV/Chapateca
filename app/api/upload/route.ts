@@ -1,26 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { getRoleFromCookie } from '@/lib/roles'
+import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { uploadFileToDrive } from '@/lib/google-drive'
 import { prisma } from '@/lib/prisma'
 
-// Utilizador de demo enquanto não há auth real
-const DEMO_USER_ID = 'demo-user'
-
-async function ensureDemoUser() {
+async function ensureRoleUser(roleKey: string) {
+  const r = ROLES[roleKey as keyof typeof ROLES]
+  if (!r) return { id: `user-${roleKey}` }
   try {
     return await prisma.user.upsert({
-      where: { email: 'demo@chapateca.org' },
-      update: {},
-      create: {
-        id: DEMO_USER_ID,
-        name: 'Demo User',
-        email: 'demo@chapateca.org',
-        role: 'CAMPO',
-      },
+      where: { email: r.email },
+      update: { name: r.name },
+      create: { id: `user-${roleKey}`, name: r.name, email: r.email, role: roleKey as 'DIRECAO' | 'DAF' | 'COMUNICACAO' | 'CAMPO' },
     })
   } catch {
-    return { id: DEMO_USER_ID }
+    return { id: `user-${roleKey}` }
   }
 }
 
@@ -44,7 +38,7 @@ export async function POST(request: NextRequest) {
   }
 
   const activityDate = new Date(activityDateStr)
-  const user = await ensureDemoUser()
+  const user = await ensureRoleUser(role)
 
   const results: string[] = []
 
