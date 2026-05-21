@@ -76,7 +76,7 @@ export default async function GaleriaPage({
   if (activeTab === 'terreno') {
     try {
       const dbAlbums = await prisma.album.findMany({
-        orderBy: { activityDate: 'desc' },
+        orderBy: [{ activityDate: 'desc' }, { createdAt: 'desc' }],
         include: { _count: { select: { photos: true } }, uploadedBy: true },
       })
       terrenoDbConnected = true
