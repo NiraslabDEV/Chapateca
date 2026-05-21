@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   const files = formData.getAll('files') as File[]
   const location = formData.get('location') as string
   const activityDateStr = formData.get('activityDate') as string
-  const description = formData.get('description') as string | null
+  const activityName = (formData.get('activityName') as string | null)?.trim() || null
 
   if (!files.length || !location || !activityDateStr) {
     return NextResponse.json({ error: 'Campos obrigatórios em falta' }, { status: 400 })
@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
         data: {
           googleDriveId: driveId,
           fileName: file.name,
+          activityName,
           fileType: file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
           mimeType: file.type,
           category: 'FOTOS_TERRENO',

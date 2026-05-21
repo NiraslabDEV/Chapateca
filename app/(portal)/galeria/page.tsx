@@ -52,7 +52,7 @@ export default async function GaleriaPage() {
     if (logs.length > 0) {
       albums = logs.map(l => ({
         id: l.id,
-        fileName: l.fileName,
+        fileName: l.activityName || l.fileName,
         location: l.location ?? '',
         activityDate: l.activityDate ?? l.createdAt,
         count: 1,

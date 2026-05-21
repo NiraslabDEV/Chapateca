@@ -22,8 +22,7 @@ export default function UploadPage() {
   const [files, setFiles] = useState<File[]>([])
   const [location, setLocation] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
-  const [desc, setDesc] = useState('')
-  const [visibility, setVisibility] = useState<'equipa' | 'doadores'>('equipa')
+  const [activityName, setActivityName] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadedId, setUploadedId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -40,8 +39,7 @@ export default function UploadPage() {
       files.forEach(f => fd.append('files', f))
       fd.append('location', location)
       fd.append('activityDate', date)
-      fd.append('description', desc)
-      fd.append('visibility', visibility)
+      fd.append('activityName', activityName)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
       let data: { fileLogId?: string } = { fileLogId: 'demo-id' }
       try { data = await res.json() } catch { /* resposta não-JSON — modo demo */ }
@@ -171,33 +169,13 @@ export default function UploadPage() {
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">Descrição</label>
-                <input type="text" value={desc} onChange={e => setDesc(e.target.value)}
-                       placeholder="Ex: Distribuição de livros, formação de voluntários..."
+                <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">
+                  Nome da Actividade
+                </label>
+                <input type="text" value={activityName} onChange={e => setActivityName(e.target.value)}
+                       placeholder="Ex: Distribuição de livros, Formação de voluntários..."
                        className="w-full px-4 py-2.5 border border-sand rounded-xl text-sm focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none" />
-              </div>
-
-              <div>
-                <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">Visibilidade</label>
-                <div className="flex flex-col gap-2">
-                  {([['equipa', 'Apenas equipa interna', 'Só colaboradores com acesso'],
-                     ['doadores', 'Partilhável com doadores', 'Pode ser enviado via link seguro']] as const).map(([val, title, sub]) => (
-                    <label key={val}
-                           className={cn('flex items-start gap-3 p-3 border rounded-xl cursor-pointer transition-all',
-                             visibility === val ? 'border-forest bg-forest/[0.04]' : 'border-sand hover:bg-parchment-2')}>
-                      <input type="radio" name="vis" value={val} checked={visibility === val}
-                             onChange={() => setVisibility(val)} className="sr-only" />
-                      <div className={cn('w-4.5 h-4.5 mt-0.5 rounded-full border-2 flex-shrink-0 relative transition-colors',
-                        visibility === val ? 'border-forest' : 'border-sand')}>
-                        {visibility === val && <div className="absolute inset-[3px] bg-forest rounded-full" />}
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-ink">{title}</div>
-                        <div className="text-xs text-ink-soft mt-0.5">{sub}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
+                <p className="text-[11px] text-ink-soft mt-1.5 font-mono">Aparece como título do álbum na Galeria</p>
               </div>
             </div>
 
@@ -247,7 +225,7 @@ export default function UploadPage() {
                       className="w-full py-3.5 bg-gold text-forest font-bold text-sm rounded-full shadow-gold hover:-translate-y-0.5 transition-all">
                 Ver na Galeria
               </button>
-              <button onClick={() => { setStep(1); setFiles([]); setLocation(''); setDesc(''); }}
+              <button onClick={() => { setStep(1); setFiles([]); setLocation(''); setActivityName(''); }}
                       className="w-full py-3 border border-sand rounded-xl text-sm text-ink-mid hover:bg-parchment-2 transition-colors">
                 Carregar mais fotos
               </button>

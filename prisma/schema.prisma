@@ -38,6 +38,7 @@ model FileLog {
   fileType      String    // IMAGE | VIDEO | PDF | DOCX | XLSX
   mimeType      String
   category      String    // FOTOS_TERRENO | FINANCEIRO | ESTRATEGIA | PROCEDIMENTOS
+  activityName  String?
   location      String?
   activityDate  DateTime?
   shareLink     String?
