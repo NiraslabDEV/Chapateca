@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
   const location = formData.get('location') as string
   const activityDateStr = formData.get('activityDate') as string
   const activityName = (formData.get('activityName') as string | null)?.trim() || null
+  const activityType = (formData.get('activityType') as string | null)?.trim() || null
+  const participantsRaw = formData.get('participants') as string | null
+  const participantsNum = participantsRaw ? parseInt(participantsRaw, 10) || null : null
+  const observations = (formData.get('observations') as string | null)?.trim() || null
 
   if (!files.length || !location || !activityDateStr) {
     return NextResponse.json({ error: 'Campos obrigatórios em falta' }, { status: 400 })
@@ -39,6 +43,25 @@ export async function POST(request: NextRequest) {
 
   const activityDate = new Date(activityDateStr)
   const user = await ensureRoleUser(role)
+
+  // Criar o Album antes do loop de ficheiros
+  let albumId: string | null = null
+  try {
+    const album = await prisma.album.create({
+      data: {
+        activityName: activityName || null,
+        location,
+        activityDate,
+        activityType: activityType || null,
+        participants: participantsNum || null,
+        observations: observations || null,
+        uploadedById: user.id,
+      },
+    })
+    albumId = album.id
+  } catch {
+    albumId = null
+  }
 
   const results: string[] = []
 
@@ -74,6 +97,7 @@ export async function POST(request: NextRequest) {
           location,
           activityDate,
           uploadedById: user.id,
+          ...(albumId ? { albumId } : {}),
         },
       })
       results.push(log.id)
@@ -82,5 +106,5 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ success: true, fileLogId: results[0], count: results.length })
+  return NextResponse.json({ success: true, albumId, count: results.length })
 }

@@ -23,6 +23,9 @@ export default function UploadPage() {
   const [location, setLocation] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [activityName, setActivityName] = useState('')
+  const [activityType, setActivityType] = useState('')
+  const [participants, setParticipants] = useState('')
+  const [observations, setObservations] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadedId, setUploadedId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -40,10 +43,13 @@ export default function UploadPage() {
       fd.append('location', location)
       fd.append('activityDate', date)
       fd.append('activityName', activityName)
+      fd.append('activityType', activityType)
+      fd.append('participants', participants)
+      fd.append('observations', observations)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
-      let data: { fileLogId?: string } = { fileLogId: 'demo-id' }
+      let data: { albumId?: string } = { albumId: 'demo-id' }
       try { data = await res.json() } catch { /* resposta não-JSON — modo demo */ }
-      setUploadedId(data.fileLogId ?? 'demo-id')
+      setUploadedId(data.albumId ?? 'demo-id')
     } catch {
       setUploadedId('demo-id')
     } finally {
@@ -177,6 +183,43 @@ export default function UploadPage() {
                        className="w-full px-4 py-2.5 border border-sand rounded-xl text-sm focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none" />
                 <p className="text-[11px] text-ink-soft mt-1.5 font-mono">Aparece como título do álbum na Galeria</p>
               </div>
+
+              <div>
+                <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">
+                  Tipo de Actividade
+                </label>
+                <select name="activityType" value={activityType} onChange={e => setActivityType(e.target.value)}
+                        className="w-full px-4 py-2.5 border border-sand rounded-xl text-sm bg-white
+                                   focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none appearance-none">
+                  <option value="">Seleccionar tipo...</option>
+                  <option value="distribuicao">Distribuição de Livros</option>
+                  <option value="formacao">Formação</option>
+                  <option value="visita">Visita de Campo</option>
+                  <option value="feira">Feira de Leitura</option>
+                  <option value="inauguracao">Inauguração</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">
+                    Participantes
+                  </label>
+                  <input type="number" min="0" value={participants} onChange={e => setParticipants(e.target.value)}
+                         placeholder="Ex: 45"
+                         className="w-full px-4 py-2.5 border border-sand rounded-xl text-sm focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">
+                    Observações <span className="text-[11px] font-normal normal-case text-ink-soft">(opcional)</span>
+                  </label>
+                  <textarea value={observations} onChange={e => setObservations(e.target.value)} rows={2}
+                            placeholder="Notas sobre a actividade..."
+                            className="w-full px-4 py-2.5 border border-sand rounded-xl text-sm resize-none
+                                       focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none" />
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-3 mt-8">
@@ -221,11 +264,11 @@ export default function UploadPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <button onClick={() => router.push('/galeria')}
+              <button onClick={() => router.push(uploadedId && uploadedId !== 'demo-id' ? `/galeria/${uploadedId}` : '/galeria')}
                       className="w-full py-3.5 bg-gold text-forest font-bold text-sm rounded-full shadow-gold hover:-translate-y-0.5 transition-all">
                 Ver na Galeria
               </button>
-              <button onClick={() => { setStep(1); setFiles([]); setLocation(''); setActivityName(''); }}
+              <button onClick={() => { setStep(1); setFiles([]); setLocation(''); setActivityName(''); setActivityType(''); setParticipants(''); setObservations(''); }}
                       className="w-full py-3 border border-sand rounded-xl text-sm text-ink-mid hover:bg-parchment-2 transition-colors">
                 Carregar mais fotos
               </button>

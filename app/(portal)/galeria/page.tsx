@@ -4,15 +4,28 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { getRoleFromCookie } from '@/lib/roles'
 import { Upload, MapPin, Calendar } from 'lucide-react'
+import { ACTIVITY_TYPES } from '@/lib/activity-types'
 import AlbumActions from '@/components/galeria/album-actions'
 
+type AlbumEntry = {
+  id: string
+  title: string
+  location: string
+  activityDate: Date
+  count: number
+  uploaderName: string
+  uploaderInitials: string
+  activityType: string | null
+  participants: number | null
+}
+
 // Mock data quando não há registos na DB
-const MOCK_ALBUMS = [
-  { id: '1', fileName: 'Actividade Malhangalene', location: 'Malhangalene', activityDate: new Date('2025-06-12'), count: 14, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
-  { id: '2', fileName: 'Distribuição de Livros', location: 'Polana Caniço', activityDate: new Date('2025-06-08'), count: 8, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
-  { id: '3', fileName: 'Formação de Voluntários', location: 'Sede', activityDate: new Date('2025-06-01'), count: 22, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
-  { id: '4', fileName: 'Feira de Leitura', location: 'Maxaquene', activityDate: new Date('2025-05-25'), count: 31, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
-  { id: '5', fileName: 'Visita Chamanculo', location: 'Chamanculo', activityDate: new Date('2025-05-14'), count: 17, uploaderName: 'Equipa Campo', uploaderInitials: 'EC' },
+const MOCK_ALBUMS: AlbumEntry[] = [
+  { id: '1', title: 'Actividade Malhangalene', location: 'Malhangalene', activityDate: new Date('2025-06-12'), count: 14, uploaderName: 'Equipa Campo', uploaderInitials: 'EC', activityType: null, participants: null },
+  { id: '2', title: 'Distribuição de Livros', location: 'Polana Caniço', activityDate: new Date('2025-06-08'), count: 8, uploaderName: 'Equipa Campo', uploaderInitials: 'EC', activityType: 'distribuicao', participants: 32 },
+  { id: '3', title: 'Formação de Voluntários', location: 'Sede', activityDate: new Date('2025-06-01'), count: 22, uploaderName: 'Equipa Campo', uploaderInitials: 'EC', activityType: 'formacao', participants: null },
+  { id: '4', title: 'Feira de Leitura', location: 'Maxaquene', activityDate: new Date('2025-05-25'), count: 31, uploaderName: 'Equipa Campo', uploaderInitials: 'EC', activityType: 'feira', participants: 120 },
+  { id: '5', title: 'Visita Chamanculo', location: 'Chamanculo', activityDate: new Date('2025-05-14'), count: 17, uploaderName: 'Equipa Campo', uploaderInitials: 'EC', activityType: 'visita', participants: null },
 ]
 
 const THUMB_COLORS = [
@@ -27,13 +40,13 @@ function formatDate(d: Date) {
   return d.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-function groupByMonth(items: typeof MOCK_ALBUMS) {
+function groupByMonth(items: AlbumEntry[]) {
   return items.reduce((acc, item) => {
     const key = item.activityDate.toLocaleDateString('pt-MZ', { month: 'long', year: 'numeric' })
     if (!acc[key]) acc[key] = []
     acc[key].push(item)
     return acc
-  }, {} as Record<string, typeof MOCK_ALBUMS>)
+  }, {} as Record<string, AlbumEntry[]>)
 }
 
 export default async function GaleriaPage() {
@@ -41,23 +54,28 @@ export default async function GaleriaPage() {
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) redirect('/')
 
-  // Tenta buscar dados reais, cai no mock se DB não estiver configurada
-  let albums = MOCK_ALBUMS
+  let albums: AlbumEntry[] = MOCK_ALBUMS
+
   try {
-    const logs = await prisma.fileLog.findMany({
-      where: { category: 'FOTOS_TERRENO' },
+    const dbAlbums = await prisma.album.findMany({
+      where: {},
       orderBy: { activityDate: 'desc' },
-      include: { uploadedBy: true },
+      include: {
+        _count: { select: { photos: true } },
+        uploadedBy: true,
+      },
     })
-    if (logs.length > 0) {
-      albums = logs.map(l => ({
-        id: l.id,
-        fileName: l.activityName || l.fileName,
-        location: l.location ?? '',
-        activityDate: l.activityDate ?? l.createdAt,
-        count: 1,
-        uploaderName: l.uploadedBy?.name ?? 'Equipa',
-        uploaderInitials: (l.uploadedBy?.name ?? 'EQ').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase(),
+    if (dbAlbums.length > 0) {
+      albums = dbAlbums.map(a => ({
+        id: a.id,
+        title: a.activityName || `Actividade · ${a.location}`,
+        location: a.location,
+        activityDate: a.activityDate,
+        count: a._count.photos,
+        uploaderName: a.uploadedBy?.name ?? 'Equipa',
+        uploaderInitials: (a.uploadedBy?.name ?? 'EQ').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase(),
+        activityType: a.activityType,
+        participants: a.participants,
       }))
     }
   } catch { /* DB não configurada ainda */ }
@@ -107,14 +125,26 @@ export default async function GaleriaPage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-display text-[20px] text-ink mb-1.5">{album.fileName}</h4>
-                  <div className="flex items-center gap-3 text-[12px] text-ink-soft font-mono mb-3">
+                  <h4 className="font-display text-[20px] text-ink mb-1.5">{album.title}</h4>
+                  <div className="flex items-center gap-3 text-[12px] text-ink-soft font-mono mb-2">
                     <span className="flex items-center gap-1"><MapPin size={11} />{album.location}</span>
                     <span className="w-1 h-1 rounded-full bg-current opacity-60" />
                     <span className="flex items-center gap-1"><Calendar size={11} />{formatDate(album.activityDate)}</span>
                     <span className="w-1 h-1 rounded-full bg-current opacity-60" />
                     <span>{album.count} fotos</span>
                   </div>
+                  {(album.activityType || album.participants) && (
+                    <div className="flex items-center gap-2 mb-2">
+                      {album.activityType && (
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-forest/10 text-forest font-medium">
+                          {ACTIVITY_TYPES[album.activityType] ?? album.activityType}
+                        </span>
+                      )}
+                      {album.participants && (
+                        <span className="text-[11px] text-ink-soft font-mono">{album.participants} participantes</span>
+                      )}
+                    </div>
+                  )}
                   <div className="flex items-center gap-1.5 text-[12px] text-ink-mid">
                     <div className="w-5 h-5 rounded-full bg-gold/80 flex items-center justify-center text-[8px] font-bold text-white">{album.uploaderInitials}</div>
                     {album.uploaderName}

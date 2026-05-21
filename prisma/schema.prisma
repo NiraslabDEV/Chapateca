@@ -29,6 +29,7 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   uploads      FileLog[]
+  albums       Album[]
 }
 
 model Task {
@@ -43,6 +44,21 @@ model Task {
   createdAt DateTime  @default(now())
 }
 
+model Album {
+  id           String    @id @default(cuid())
+  activityName String?
+  location     String
+  activityDate DateTime
+  activityType String?
+  participants Int?
+  observations String?
+  shareToken   String?   @unique
+  uploadedById String
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime  @default(now())
+  photos       FileLog[]
+}
+
 model FileLog {
   id            String    @id @default(cuid())
   googleDriveId String    @unique
@@ -54,6 +70,8 @@ model FileLog {
   location      String?
   activityDate  DateTime?
   shareLink     String?
+  albumId       String?
+  album         Album?    @relation(fields: [albumId], references: [id])
   uploadedById  String
   uploadedBy    User      @relation(fields: [uploadedById], references: [id])
   createdAt     DateTime  @default(now())
