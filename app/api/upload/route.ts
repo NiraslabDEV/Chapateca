@@ -13,7 +13,8 @@ async function ensureRoleUser(roleKey: string) {
       update: { name: r.name },
       create: { id: `user-${roleKey}`, name: r.name, email: r.email, role: r.dbRole },
     })
-  } catch {
+  } catch (err) {
+    console.error('[Upload] ensureRoleUser falhou:', (err as Error).message)
     return { id: `user-${roleKey}` }
   }
 }
@@ -53,7 +54,8 @@ export async function POST(request: NextRequest) {
           category: 'MARKETING',
           activityDate: now,
         })
-      } catch {
+      } catch (err) {
+        console.error('[Upload Marketing] Drive falhou:', (err as Error).message)
         driveId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
       }
       try {
@@ -71,7 +73,8 @@ export async function POST(request: NextRequest) {
           },
         })
         results.push(log.id)
-      } catch {
+      } catch (err) {
+        console.error('[Upload Marketing] FileLog falhou:', (err as Error).message)
         results.push(driveId)
       }
     }
@@ -95,6 +98,7 @@ export async function POST(request: NextRequest) {
   const user = await ensureRoleUser(role)
 
   let albumId: string | null = null
+  let albumError: string | null = null
   try {
     const album = await prisma.album.create({
       data: {
@@ -108,8 +112,9 @@ export async function POST(request: NextRequest) {
       },
     })
     albumId = album.id
-  } catch {
-    albumId = null
+  } catch (err) {
+    albumError = (err as Error).message
+    console.error('[Upload] Falhou criar Album:', albumError)
   }
 
   const results: string[] = []
@@ -126,7 +131,8 @@ export async function POST(request: NextRequest) {
         activityDate,
         location,
       })
-    } catch {
+    } catch (err) {
+      console.error('[Upload Terreno] Drive falhou:', (err as Error).message)
       driveId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
     }
     try {
@@ -145,10 +151,11 @@ export async function POST(request: NextRequest) {
         },
       })
       results.push(log.id)
-    } catch {
+    } catch (err) {
+      console.error('[Upload] Falhou criar FileLog:', (err as Error).message)
       results.push(driveId)
     }
   }
 
-  return NextResponse.json({ success: true, albumId, count: results.length })
+  return NextResponse.json({ success: true, albumId, count: results.length, albumError })
 }
