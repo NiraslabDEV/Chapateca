@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, BookOpen, Target, Wallet, Camera, Settings, HelpCircle, Lock, LogOut, X, Moon, Sun } from 'lucide-react'
 import { ROLES, type RoleKey } from '@/lib/roles'
+import type { EffectiveAccess } from '@/app/(portal)/layout'
 import RoleBadge from '@/components/ui/role-badge'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
@@ -23,10 +24,11 @@ const SECONDARY = [
 
 interface SidebarProps {
   role: RoleKey
+  effectiveAccess: EffectiveAccess
   onClose?: () => void
 }
 
-export default function Sidebar({ role, onClose }: SidebarProps) {
+export default function Sidebar({ role, effectiveAccess, onClose }: SidebarProps) {
   const pathname = usePathname()
   const r = ROLES[role]
   const [dark, setDark] = useState(false)
@@ -71,7 +73,7 @@ export default function Sidebar({ role, onClose }: SidebarProps) {
       {/* Nav principal */}
       <nav className="flex-1 px-3 py-3 flex flex-col gap-0.5 overflow-y-auto">
         {NAV_ITEMS.map(item => {
-          const locked = item.key !== null && !r.access[item.key]
+          const locked = item.key !== null && !effectiveAccess[item.key]
           const active = pathname.startsWith(item.href)
           const Icon = item.icon
           return (

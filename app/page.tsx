@@ -18,8 +18,13 @@ async function loginAction(formData: FormData) {
 
   // Verifica senha: DB tem prioridade, senão fallback para env/1234
   let hasCustomPassword = false
+  let mustReset = false
   try {
-    const user = await prisma.user.findUnique({ where: { email: r.email }, select: { passwordHash: true } })
+    const user = await prisma.user.findUnique({
+      where: { email: r.email },
+      select: { passwordHash: true, mustResetPassword: true },
+    })
+    mustReset = user?.mustResetPassword ?? false
     if (user?.passwordHash) {
       hasCustomPassword = true
       const hash = hashPassword(password, r.email)
@@ -41,8 +46,8 @@ async function loginAction(formData: FormData) {
     path: '/',
   })
 
-  // Primeiro login (sem senha própria) → obriga a definir senha
-  if (!hasCustomPassword) redirect('/definir-senha')
+  // Sem senha própria OU admin forçou redefinição → obriga a definir senha
+  if (!hasCustomPassword || mustReset) redirect('/definir-senha')
 
   redirect('/dashboard')
 }

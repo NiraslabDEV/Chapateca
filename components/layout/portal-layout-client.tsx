@@ -5,13 +5,15 @@ import { usePathname } from 'next/navigation'
 import Topbar from './topbar'
 import Sidebar from './sidebar'
 import type { RoleKey } from '@/lib/roles'
+import type { EffectiveAccess } from '@/app/(portal)/layout'
 
 interface Props {
   role: RoleKey
+  effectiveAccess: EffectiveAccess
   children: React.ReactNode
 }
 
-export default function PortalLayoutClient({ role, children }: Props) {
+export default function PortalLayoutClient({ role, effectiveAccess, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
 
@@ -52,7 +54,7 @@ export default function PortalLayoutClient({ role, children }: Props) {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
           'flex-shrink-0',
         ].join(' ')}>
-          <Sidebar role={role} onClose={() => setSidebarOpen(false)} />
+          <Sidebar role={role} effectiveAccess={effectiveAccess} onClose={() => setSidebarOpen(false)} />
         </div>
 
         {/* Conteúdo principal */}

@@ -20,7 +20,12 @@ model User {
   email        String    @unique
   image        String?
   role         Role      @default(CAMPO)
-  passwordHash String?   // null = ainda não definiu senha própria
+  passwordHash      String?   // null = ainda não definiu senha própria
+  mustResetPassword Boolean   @default(false)
+  accessGaleria     Boolean?  // null = usa default do role
+  accessManuais     Boolean?
+  accessEstrategia  Boolean?
+  accessFinancas    Boolean?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   uploads      FileLog[]

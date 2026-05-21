@@ -23,7 +23,7 @@ async function definirSenhaAction(formData: FormData) {
   try {
     await prisma.user.upsert({
       where: { email: r.email },
-      update: { passwordHash },
+      update: { passwordHash, mustResetPassword: false },
       create: {
         id: `user-${roleKey}`,
         name: r.name,
