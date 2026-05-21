@@ -1,4 +1,4 @@
-import { Readable } from 'stream'
+import { PassThrough } from 'stream'
 
 // Verifica se as credenciais estão configuradas
 const isDriveReady = !!(
@@ -80,13 +80,23 @@ export async function uploadFileToDrive(params: UploadParams): Promise<string> {
 
   const folderId = await getOrCreateYearMonthFolder(drive, rootFolderId, params.activityDate)
 
-  const response = await drive.files.create({
-    requestBody: { name: params.filename, parents: [folderId] },
-    media: { mimeType: params.mimeType, body: Readable.from(params.buffer) },
-    fields: 'id',
-  })
+  // Converte Buffer para stream passthrough (mais compatível com googleapis)
+  const stream = new PassThrough()
+  stream.end(params.buffer)
 
-  return response.data.id!
+  try {
+    const response = await drive.files.create({
+      requestBody: { name: params.filename, parents: [folderId] },
+      media: { mimeType: params.mimeType, body: stream },
+      fields: 'id',
+    })
+    console.log(`[Drive] Upload OK: ${response.data.id}`)
+    return response.data.id!
+  } catch (err: unknown) {
+    const e = err as { code?: number; errors?: unknown[]; message?: string }
+    console.error('[Drive] Upload error:', e.code, JSON.stringify(e.errors), e.message)
+    throw err
+  }
 }
 
 export async function createShareLink(driveFileId: string): Promise<string> {

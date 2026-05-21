@@ -52,14 +52,19 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer())
     const filename = `${activityDate.toISOString().slice(0, 10)}_${location}_${file.name}`
 
-    // Upload para o Drive (ou mock)
-    const driveId = await uploadFileToDrive({
-      buffer,
-      filename,
-      mimeType: file.type || 'application/octet-stream',
-      category: 'FOTOS_TERRENO',
-      activityDate,
-    })
+    // Upload para o Drive (ou mock em caso de erro)
+    let driveId: string
+    try {
+      driveId = await uploadFileToDrive({
+        buffer,
+        filename,
+        mimeType: file.type || 'application/octet-stream',
+        category: 'FOTOS_TERRENO',
+        activityDate,
+      })
+    } catch {
+      driveId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    }
 
     // Registo na base de dados (ignora erro se DB não estiver configurada)
     try {
