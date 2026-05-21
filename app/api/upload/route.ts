@@ -11,7 +11,7 @@ async function ensureRoleUser(roleKey: string) {
     return await prisma.user.upsert({
       where: { email: r.email },
       update: { name: r.name },
-      create: { id: `user-${roleKey}`, name: r.name, email: r.email, role: roleKey as 'DIRECAO' | 'DAF' | 'COMUNICACAO' | 'CAMPO' },
+      create: { id: `user-${roleKey}`, name: r.name, email: r.email, role: r.dbRole },
     })
   } catch {
     return { id: `user-${roleKey}` }
