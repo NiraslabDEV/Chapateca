@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { getRoleFromCookie } from '@/lib/roles'
-import { Upload, Share2, Eye, MapPin, Calendar } from 'lucide-react'
+import { Upload, MapPin, Calendar } from 'lucide-react'
+import AlbumActions from '@/components/galeria/album-actions'
 
 // Mock data quando não há registos na DB
 const MOCK_ALBUMS = [
@@ -121,15 +122,7 @@ export default async function GaleriaPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 flex-shrink-0">
-                  <Link href={`/galeria/share/${album.id}`}
-                        className="flex items-center gap-1.5 px-3 py-2 border border-sand rounded-lg text-[12px] font-medium text-ink-mid hover:border-ink-soft hover:text-ink transition-colors">
-                    <Share2 size={13} /> Partilhar
-                  </Link>
-                  <button className="flex items-center gap-1.5 px-3 py-2 border border-sand rounded-lg text-[12px] font-medium text-ink-mid hover:border-ink-soft hover:text-ink transition-colors">
-                    <Eye size={13} /> Ver
-                  </button>
-                </div>
+                <AlbumActions albumId={album.id} />
               </div>
             ))}
           </div>
