@@ -1,21 +1,43 @@
 import { PassThrough } from 'stream'
 
-// Verifica se as credenciais estão configuradas
-const isDriveReady = !!(
+// Suporta dois modos de autenticação:
+// 1. OAuth2 (Gmail gratuito) — usa GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET + GOOGLE_REFRESH_TOKEN
+// 2. Service Account (Google Workspace) — usa GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY
+const isOAuthReady = !!(
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_SECRET &&
+  process.env.GOOGLE_REFRESH_TOKEN &&
+  process.env.DRIVE_FOLDER_COMUNICACAO
+)
+
+const isServiceAccountReady = !!(
   process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
   process.env.GOOGLE_PRIVATE_KEY &&
   process.env.DRIVE_FOLDER_COMUNICACAO
 )
 
+const isDriveReady = isOAuthReady || isServiceAccountReady
+
 const FOLDER_MAP: Record<string, string> = {
-  FOTOS_TERRENO:  process.env.DRIVE_FOLDER_COMUNICACAO  ?? '',
-  FINANCEIRO:     process.env.DRIVE_FOLDER_FINANCEIRO   ?? '',
-  ESTRATEGIA:     process.env.DRIVE_FOLDER_ESTRATEGIA   ?? '',
+  FOTOS_TERRENO:  process.env.DRIVE_FOLDER_COMUNICACAO   ?? '',
+  FINANCEIRO:     process.env.DRIVE_FOLDER_FINANCEIRO    ?? '',
+  ESTRATEGIA:     process.env.DRIVE_FOLDER_ESTRATEGIA    ?? '',
   PROCEDIMENTOS:  process.env.DRIVE_FOLDER_PROCEDIMENTOS ?? '',
 }
 
 async function getDriveClient() {
   const { google } = await import('googleapis')
+
+  if (isOAuthReady) {
+    const oauth2 = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+    )
+    oauth2.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN })
+    return google.drive({ version: 'v3', auth: oauth2 })
+  }
+
+  // Fallback: Service Account
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
