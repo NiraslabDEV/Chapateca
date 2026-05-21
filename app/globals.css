@@ -2,28 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Variáveis de cor ── */
+:root {
+  --color-ink:          #1A1024;
+  --color-ink-mid:      #4A3D60;
+  --color-ink-soft:     #8B7FA8;
+  --color-surface:      #FFFFFF;
+  --color-surface-2:    #EDF8F9;
+  --color-surface-3:    #F5FCFC;
+  --color-border:       #D4C8EC;
+  --color-border-light: #E8E0F5;
+}
+
+/* Dark mode — as variáveis mudam e todos os componentes seguem */
+.dark {
+  --color-ink:          #F0ECF8;
+  --color-ink-mid:      #C4B8D8;
+  --color-ink-soft:     #8B7FA8;
+  --color-surface:      #0F0A1E;
+  --color-surface-2:    #1A1230;
+  --color-surface-3:    #150F28;
+  --color-border:       #2E2248;
+  --color-border-light: #241A3C;
+}
+
 @layer base {
   * { box-sizing: border-box; }
 
   html, body {
-    @apply bg-white text-ink font-body antialiased;
+    @apply bg-parchment text-ink font-body antialiased;
     font-size: 14px;
-  }
-
-  .dark html, .dark body {
-    @apply bg-[#0F0A1E] text-white;
   }
 
   ::selection {
     background: #E8652A33;
-    color: #1A0A30;
   }
-}
-
-/* Dark mode base */
-.dark body {
-  background: #0F0A1E;
-  color: #F0ECF8;
 }
 
 @layer utilities {
@@ -34,29 +47,20 @@
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes pop {
   from { transform: scale(0); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
-
 @keyframes toastIn {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0); opacity: 1; }
 }
 
-@keyframes slideIn {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
-}
-
-.animate-page-in  { animation: pageIn 0.25s ease-out; }
-.animate-card-in  { animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1); }
-.animate-pop      { animation: pop 0.5s cubic-bezier(0.16,1,0.3,1); }
-.animate-toast    { animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1); }
-.animate-slide-in { animation: slideIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+.animate-page-in { animation: pageIn 0.25s ease-out; }
+.animate-card-in { animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1); }
+.animate-pop     { animation: pop 0.5s cubic-bezier(0.16,1,0.3,1); }
+.animate-toast   { animation: toastIn 0.3s cubic-bezier(0.16,1,0.3,1); }

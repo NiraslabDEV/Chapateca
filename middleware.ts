@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getRoleFromCookie } from '@/lib/roles'
 
-const PUBLIC_PATHS = ['/']
+const PUBLIC_PATHS = ['/', '/esqueci-senha']
+const AUTH_ONLY_PATHS = ['/definir-senha'] // requer cookie mas não redirect
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const roleCookie = request.cookies.get('chapateca-role')?.value
   const role = getRoleFromCookie(roleCookie)
 
-  // Permite paths públicos e rotas internas do Next.js
   if (PUBLIC_PATHS.includes(pathname)) return NextResponse.next()
 
-  // Sem role → redireciona para login
-  if (!role) {
-    return NextResponse.redirect(new URL('/', request.url))
+  // /definir-senha e /esqueci-senha passam se tiverem cookie
+  if (AUTH_ONLY_PATHS.includes(pathname)) {
+    if (!role) return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.next()
   }
+
+  if (!role) return NextResponse.redirect(new URL('/', request.url))
 
   return NextResponse.next()
 }

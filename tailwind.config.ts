@@ -9,44 +9,44 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Primário: ROXO da marca (#461882)
+        // Primário: ROXO da marca
         forest: {
           deep:    '#2A0D52',
           DEFAULT: '#461882',
           mid:     '#5A2AA0',
           light:   '#7B4DC0',
         },
-        // Acento: LARANJA da marca (#E8652A)
+        // Acento: LARANJA da marca
         gold: {
           DEFAULT: '#E8652A',
           glow:    '#F07840',
           muted:   '#FAC8A8',
           soft:    '#FFF0E8',
         },
-        // Fundo claro: azul-água suave do site
-        parchment: {
-          DEFAULT: '#FFFFFF',
-          2:       '#EDF8F9',   // azul-água muito suave
-          3:       '#F5FCFC',   // quase branco com toque aqua
-        },
-        // Bordas: tom roxo suave
-        sand: {
-          DEFAULT: '#D4C8EC',
-          light:   '#E8E0F5',
-        },
-        // Texto
+        // Texto — usa CSS vars → muda no dark mode automaticamente
         ink: {
-          DEFAULT: '#1A0A30',
-          mid:     '#4A3D60',
-          soft:    '#8B7FA8',
+          DEFAULT: 'var(--color-ink)',
+          mid:     'var(--color-ink-mid)',
+          soft:    'var(--color-ink-soft)',
         },
-        // Azul-água do site (secção de fundo)
+        // Fundos — usa CSS vars
+        parchment: {
+          DEFAULT: 'var(--color-surface)',
+          2:       'var(--color-surface-2)',
+          3:       'var(--color-surface-3)',
+        },
+        // Bordas — usa CSS vars
+        sand: {
+          DEFAULT: 'var(--color-border)',
+          light:   'var(--color-border-light)',
+        },
+        // Azul-água do site
         aqua: {
           DEFAULT: '#C8E8EE',
           dark:    '#A0D4DC',
           soft:    '#E8F8FA',
         },
-        // Roles (mantêm-se)
+        // Roles
         role: {
           campo:             '#2D7D46',
           'campo-bg':        '#E8F5EC',

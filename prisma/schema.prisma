@@ -15,14 +15,15 @@ enum Role {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String
-  email     String    @unique
-  image     String?
-  role      Role      @default(CAMPO)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  uploads   FileLog[]
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  image        String?
+  role         Role      @default(CAMPO)
+  passwordHash String?   // null = ainda não definiu senha própria
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  uploads      FileLog[]
 }
 
 model FileLog {
