@@ -14,17 +14,28 @@
   --color-border-light: #E8E0F5;
 }
 
-/* Dark mode — as variáveis mudam e todos os componentes seguem */
+/* Dark mode — fundos ficam escuros, cards ficam brancos com texto escuro (legível) */
 .dark {
-  --color-ink:          #F0ECF8;
-  --color-ink-mid:      #C4B8D8;
-  --color-ink-soft:     #8B7FA8;
-  --color-surface:      #0F0A1E;
-  --color-surface-2:    #1A1230;
-  --color-surface-3:    #150F28;
+  --color-surface:      #1A1230;
+  --color-surface-2:    #221840;
+  --color-surface-3:    #1E1535;
   --color-border:       #2E2248;
   --color-border-light: #241A3C;
 }
+
+/* Dark mode: fundo escuro herda texto claro */
+.dark main {
+  color: #F0ECF8;
+}
+
+/* Cards brancos revertem para texto escuro (css cascade: bg-white define cor base) */
+.dark .bg-white {
+  color: #1A1024;
+}
+
+/* Textos utilitários dentro de cards brancos mantêm a sua cor original */
+.dark .bg-white .text-ink-soft { color: #8B7FA8; }
+.dark .bg-white .text-ink-mid  { color: #4A3D60; }
 
 @layer base {
   * { box-sizing: border-box; }
