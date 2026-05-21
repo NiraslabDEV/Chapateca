@@ -46,7 +46,6 @@ const MODULES = [
     accent: '#E5B84A',
     key: 'galeria' as const,
     tag: 'Campo',
-    urgent: true,
   },
 ]
 
