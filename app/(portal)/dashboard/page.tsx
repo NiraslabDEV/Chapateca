@@ -61,48 +61,88 @@ export default async function DashboardPage() {
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
+  type FeedItem = {
+    id: string
+    href: string
+    uploaderName: string
+    uploaderInitials: string
+    description: string
+    date: Date
+  }
+
   let albumsThisMonth = 0
   let photosThisMonth = 0
   let pendingTasks = 0
-  let recentAlbums: {
-    id: string
-    activityName: string | null
-    location: string
-    activityDate: Date
-    uploaderName: string
-    photoCount: number
-  }[] = []
+  let feedItems: FeedItem[] = []
   let topLocations: { location: string; count: number }[] = []
+  let dbConnected = false
+
+  function initials(name: string) {
+    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  }
 
   try {
-    const [aCount, pCount, tCount, recent, locs] = await Promise.all([
+    const [aCount, pCount, tCount, albums, fileLogs, locs] = await Promise.all([
       prisma.album.count({ where: { createdAt: { gte: startOfMonth } } }),
       prisma.fileLog.count({ where: { createdAt: { gte: startOfMonth } } }),
       prisma.task.count({ where: { status: 'pending' } }),
       prisma.album.findMany({
-        take: 5,
+        take: 8,
         orderBy: { createdAt: 'desc' },
         include: { uploadedBy: true, _count: { select: { photos: true } } },
       }),
-      prisma.album.groupBy({
+      prisma.fileLog.findMany({
+        where: { albumId: null },
+        take: 8,
+        orderBy: { createdAt: 'desc' },
+        include: { uploadedBy: true },
+      }),
+      prisma.fileLog.groupBy({
         by: ['location'],
+        where: { location: { not: null } },
         _count: { id: true },
         orderBy: { _count: { id: 'desc' } },
         take: 4,
       }),
     ])
+
+    dbConnected = true
     albumsThisMonth = aCount
     photosThisMonth = pCount
     pendingTasks = tCount
-    recentAlbums = recent.map(a => ({
-      id: a.id,
-      activityName: a.activityName,
-      location: a.location,
-      activityDate: a.activityDate,
-      uploaderName: a.uploadedBy?.name ?? 'Equipa',
-      photoCount: a._count.photos,
-    }))
-    topLocations = locs.map(l => ({ location: l.location, count: l._count.id }))
+
+    const albumItems: FeedItem[] = albums.map(a => {
+      const name = a.uploadedBy?.name ?? 'Equipa'
+      const n = a._count.photos
+      return {
+        id: `a-${a.id}`,
+        href: `/galeria/${a.id}`,
+        uploaderName: name,
+        uploaderInitials: initials(name),
+        description: `carregou ${n} foto${n !== 1 ? 's' : ''} em ${a.location}${a.activityName ? ` — ${a.activityName}` : ''}`,
+        date: a.createdAt,
+      }
+    })
+
+    const logItems: FeedItem[] = fileLogs.map(f => {
+      const name = f.uploadedBy?.name ?? 'Equipa'
+      return {
+        id: `f-${f.id}`,
+        href: `/galeria`,
+        uploaderName: name,
+        uploaderInitials: initials(name),
+        description: `carregou 1 foto${f.location ? ` em ${f.location}` : ''}`,
+        date: f.createdAt,
+      }
+    })
+
+    feedItems = [...albumItems, ...logItems]
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 6)
+
+    topLocations = locs
+      .filter(l => l.location)
+      .map(l => ({ location: l.location!, count: l._count.id }))
   } catch { /* DB não disponível */ }
 
   const STATS = [
@@ -187,40 +227,36 @@ export default async function DashboardPage() {
         <h2 className="font-display text-lg text-ink mb-4 flex items-center gap-3 after:flex-1 after:h-px after:bg-sand after:content-['']">
           Actividade recente
         </h2>
-        {recentAlbums.length > 0 ? (
+
+        {feedItems.length > 0 ? (
           <div className="flex flex-col gap-0.5">
-            {recentAlbums.map(a => (
-              <a key={a.id} href={`/galeria/${a.id}`}
-                 className="flex items-start gap-3 px-4 py-3 rounded-xl hover:bg-parchment-2 transition-colors">
-                <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0 bg-gold" />
-                <div className="text-[13px] text-ink-mid flex-1">
-                  <strong>{a.uploaderName}</strong> carregou {a.photoCount} foto{a.photoCount !== 1 ? 's' : ''} em {a.location}
-                  <span className="ml-2 text-[12px] text-ink-soft font-mono">
-                    {a.activityDate.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' })}
-                  </span>
+            {feedItems.map(item => (
+              <a key={item.id} href={item.href}
+                 className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-parchment-2 transition-colors">
+                <div className="w-7 h-7 rounded-full bg-gold/20 flex items-center justify-center text-[10px] font-bold text-gold flex-shrink-0">
+                  {item.uploaderInitials}
                 </div>
+                <div className="text-[13px] text-ink-mid flex-1 min-w-0">
+                  <strong className="text-ink">{item.uploaderName}</strong>{' '}
+                  {item.description}
+                </div>
+                <span className="text-[11px] text-ink-soft font-mono flex-shrink-0">
+                  {item.date.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' })}
+                </span>
               </a>
             ))}
           </div>
+        ) : dbConnected ? (
+          <div className="px-4 py-8 text-center text-sm text-ink-soft">
+            Ainda não há actividade registada. Começa por{' '}
+            <a href="/galeria/upload" className="text-forest font-medium hover:underline">carregar fotos</a>.
+          </div>
         ) : (
-          <div className="flex flex-col gap-0.5">
-            {[
-              { color: '#C8952A', text: 'Beatriz carregou 14 fotos · Malhangalene', time: '32m' },
-              { color: '#1A5C8A', text: 'Carlos partilhou álbum com doadores', time: '2h' },
-              { color: '#2E7D32', text: 'Manual do Voluntário 2025 actualizado', time: '1d' },
-            ].map((f, i) => (
-              <div key={i} className="flex items-start gap-3 px-4 py-3 rounded-xl hover:bg-parchment-2 transition-colors cursor-pointer">
-                <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ background: f.color }} />
-                <div className="text-[13px] text-ink-mid flex-1">
-                  {f.text}
-                  <span className="ml-2 text-[12px] text-ink-soft font-mono">{f.time}</span>
-                </div>
-              </div>
-            ))}
+          <div className="px-4 py-6 text-center text-[12px] text-ink-soft font-mono">
+            A aguardar ligação à base de dados…
           </div>
         )}
 
-        {/* Top locations if available */}
         {topLocations.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {topLocations.map(l => (
