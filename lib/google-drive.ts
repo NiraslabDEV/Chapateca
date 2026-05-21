@@ -88,6 +88,7 @@ export interface UploadParams {
   mimeType: string
   category: string
   activityDate: Date
+  location?: string
 }
 
 export async function uploadFileToDrive(params: UploadParams): Promise<string> {
@@ -100,7 +101,12 @@ export async function uploadFileToDrive(params: UploadParams): Promise<string> {
   const rootFolderId = FOLDER_MAP[params.category]
   if (!rootFolderId) throw new Error(`Pasta não configurada para categoria: ${params.category}`)
 
-  const folderId = await getOrCreateYearMonthFolder(drive, rootFolderId, params.activityDate)
+  let folderId = await getOrCreateYearMonthFolder(drive, rootFolderId, params.activityDate)
+
+  // Subcarpeta por bairro/localização dentro do mês
+  if (params.location) {
+    folderId = await ensureFolder(drive, folderId, params.location)
+  }
 
   // Converte Buffer para stream passthrough (mais compatível com googleapis)
   const stream = new PassThrough()

@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
         mimeType: file.type || 'application/octet-stream',
         category: 'FOTOS_TERRENO',
         activityDate,
+        location,
       })
     } catch {
       driveId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
