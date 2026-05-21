@@ -12,6 +12,16 @@ const ALLOWED_MIME_TYPES: Record<string, string> = {
   'application/msword': 'DOCX',
 }
 
+const VALID_CATEGORIES = ['FINANCEIRO', 'MANUAIS', 'ESTRATEGIA'] as const
+type DocCategory = (typeof VALID_CATEGORIES)[number]
+
+function hasAccess(category: DocCategory, role: keyof typeof ROLES) {
+  const r = ROLES[role]
+  if (category === 'FINANCEIRO') return r.access.financas
+  if (category === 'MANUAIS') return r.access.manuais
+  return r.access.estrategia
+}
+
 async function ensureRoleUser(roleKey: string) {
   const r = ROLES[roleKey as keyof typeof ROLES]
   if (!r) return { id: `user-${roleKey}` }
@@ -31,16 +41,21 @@ export async function POST(request: NextRequest) {
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
-  const r = ROLES[role]
-  if (!r.access.financas) {
-    return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
-  }
-
   const formData = await request.formData()
   const file = formData.get('file') as File | null
   const docTitle = (formData.get('docTitle') as string)?.trim()
   const docType = (formData.get('docType') as string)?.trim() || 'outro'
   const refDateStr = formData.get('refDate') as string
+  const categoryRaw = (formData.get('category') as string)?.trim().toUpperCase()
+  const folderId = (formData.get('folderId') as string | null)?.trim() || null
+
+  const category: DocCategory = VALID_CATEGORIES.includes(categoryRaw as DocCategory)
+    ? (categoryRaw as DocCategory)
+    : 'FINANCEIRO'
+
+  if (!hasAccess(category, role)) {
+    return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+  }
 
   if (!file || !docTitle || !refDateStr) {
     return NextResponse.json({ error: 'Campos obrigatórios em falta' }, { status: 400 })
@@ -65,7 +80,7 @@ export async function POST(request: NextRequest) {
       buffer,
       filename,
       mimeType: file.type,
-      category: 'FINANCEIRO',
+      category,
       activityDate: refDate,
     })
   } catch {
@@ -82,10 +97,11 @@ export async function POST(request: NextRequest) {
         fileType,
         mimeType: file.type,
         fileSize: file.size,
-        category: 'FINANCEIRO',
+        category,
         location: docType,
         activityDate: refDate,
         uploadedById: user.id,
+        ...(folderId ? { folderId } : {}),
       },
     })
     logId = log.id

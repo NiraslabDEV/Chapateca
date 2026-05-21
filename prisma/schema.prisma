@@ -30,6 +30,17 @@ model User {
   updatedAt    DateTime  @updatedAt
   uploads      FileLog[]
   albums       Album[]
+  folders      Folder[]
+}
+
+model Folder {
+  id          String    @id @default(cuid())
+  name        String
+  category    String    // FINANCEIRO | MANUAIS | ESTRATEGIA
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  files       FileLog[]
 }
 
 model Task {
@@ -73,6 +84,8 @@ model FileLog {
   shareLink     String?
   albumId       String?
   album         Album?    @relation(fields: [albumId], references: [id])
+  folderId      String?
+  folder        Folder?   @relation(fields: [folderId], references: [id])
   uploadedById  String
   uploadedBy    User      @relation(fields: [uploadedById], references: [id])
   createdAt     DateTime  @default(now())

@@ -3,6 +3,16 @@ import { cookies } from 'next/headers'
 import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
 
+const CATEGORY_ACCESS: Record<string, (r: ReturnType<typeof ROLES[keyof typeof ROLES]['access']['financas'] extends boolean ? never : never> extends never ? typeof ROLES[keyof typeof ROLES] : never) => boolean> = {}
+
+function canAccessCategory(category: string, role: keyof typeof ROLES): boolean {
+  const r = ROLES[role]
+  if (category === 'FINANCEIRO') return r.access.financas
+  if (category === 'MANUAIS') return r.access.manuais
+  if (category === 'ESTRATEGIA') return r.access.estrategia
+  return false
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ driveId: string }> }
@@ -11,9 +21,6 @@ export async function GET(
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) return new NextResponse('Não autenticado', { status: 401 })
 
-  const r = ROLES[role]
-  if (!r.access.financas) return new NextResponse('Sem permissão', { status: 403 })
-
   const { driveId } = await params
   const download = req.nextUrl.searchParams.get('download') === '1'
 
@@ -21,14 +28,17 @@ export async function GET(
     return new NextResponse('Ficheiro demo — Drive não configurado', { status: 404 })
   }
 
-  // Verifica que o ficheiro existe na DB e pertence à categoria FINANCEIRO
+  // Verifica que o ficheiro existe na DB e que o utilizador tem acesso à categoria
   let fileName = 'documento'
   let mimeType = 'application/octet-stream'
   try {
     const log = await prisma.fileLog.findFirst({
-      where: { googleDriveId: driveId, category: 'FINANCEIRO' },
+      where: { googleDriveId: driveId },
     })
     if (!log) return new NextResponse('Ficheiro não encontrado', { status: 404 })
+    if (!canAccessCategory(log.category, role)) {
+      return new NextResponse('Sem permissão', { status: 403 })
+    }
     fileName = log.fileName
     mimeType = log.mimeType
   } catch { /* DB indisponível — continua */ }

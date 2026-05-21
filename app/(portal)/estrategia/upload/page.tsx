@@ -4,7 +4,7 @@ import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
 import DocUploadForm from '@/components/modulos/doc-upload-form'
 
-export default async function FinancasUploadPage({
+export default async function EstrategiaUploadPage({
   searchParams,
 }: {
   searchParams: Promise<{ folder?: string }>
@@ -12,14 +12,14 @@ export default async function FinancasUploadPage({
   const store = await cookies()
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) redirect('/')
-  if (!ROLES[role].access.financas) redirect('/acesso-negado')
+  if (!ROLES[role].access.estrategia) redirect('/acesso-negado')
 
   const { folder: preselectedFolderId } = await searchParams
 
   let folders: { id: string; name: string }[] = []
   try {
     folders = await prisma.folder.findMany({
-      where: { category: 'FINANCEIRO' },
+      where: { category: 'ESTRATEGIA' },
       orderBy: { createdAt: 'asc' },
       select: { id: true, name: true },
     })
@@ -27,11 +27,11 @@ export default async function FinancasUploadPage({
 
   return (
     <DocUploadForm
-      category="FINANCEIRO"
-      backHref="/financas"
-      successHref="/financas"
-      accentColor="#8B3A3A"
-      categoryLabel="Departamento Financeiro"
+      category="ESTRATEGIA"
+      backHref="/estrategia"
+      successHref="/estrategia"
+      accentColor="#1A5C8A"
+      categoryLabel="Gestão Estratégica"
       folders={folders}
       preselectedFolderId={preselectedFolderId}
     />
