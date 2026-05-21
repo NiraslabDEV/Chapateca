@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { ROLES, type RoleKey } from '@/lib/roles'
-import BrandGlyph from '@/components/ui/brand-glyph'
+import Image from 'next/image'
 import RoleBadge from '@/components/ui/role-badge'
 import { Lock } from 'lucide-react'
 
@@ -41,9 +41,8 @@ export default async function LoginPage({
 
       <div className="w-full max-w-[420px] animate-card-in relative z-10">
         {/* Brand */}
-        <div className="flex flex-col items-center gap-2 mb-8">
-          <BrandGlyph size={52} />
-          <h1 className="font-display text-[32px] text-white leading-none">Chapateca</h1>
+        <div className="flex flex-col items-center gap-3 mb-8">
+          <Image src="/logo-chapateca.svg" alt="Chapateca" width={160} height={54} className="object-contain brightness-0 invert" />
           <p className="text-sm text-white/50 font-mono tracking-wide">Portal Interno · Maputo</p>
         </div>
 

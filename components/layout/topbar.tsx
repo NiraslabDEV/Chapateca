@@ -1,5 +1,5 @@
+import Image from 'next/image'
 import { Bell } from 'lucide-react'
-import BrandGlyph from '@/components/ui/brand-glyph'
 import RoleBadge from '@/components/ui/role-badge'
 import { ROLES, type RoleKey } from '@/lib/roles'
 
@@ -13,9 +13,8 @@ export default function Topbar({ role, crumbs = [] }: TopbarProps) {
   return (
     <header className="h-16 bg-forest border-b border-white/8 flex items-center px-6 gap-6 sticky top-0 z-50">
       {/* Brand */}
-      <div className="flex items-center gap-3">
-        <BrandGlyph size={28} />
-        <span className="font-display text-[22px] text-white tracking-[0.01em]">Chapateca</span>
+      <div className="flex items-center">
+        <Image src="/logo-chapateca.svg" alt="Chapateca" width={130} height={44} className="object-contain brightness-0 invert" />
       </div>
 
       {/* Breadcrumb */}
