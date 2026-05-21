@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Chapateca — Manual Completo</title>
+  <style>
+    :root {
+      --purple: #461882;
+      --purple-dark: #1A0836;
+      --purple-light: #EDE8F7;
+      --orange: #E8652A;
+      --orange-light: #FFF0E8;
+      --ink: #1A1024;
+      --ink-mid: #4A3D60;
+      --ink-soft: #8B7FA8;
+      --sand: #E8E0F5;
+      --parchment: #F9F6F0;
+      --white: #FFFFFF;
+      --green: #2D5220;
+      --green-light: #E8F5E0;
+      --amber: #92400E;
+      --amber-light: #FEF3C7;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--parchment);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    .hero {
+      background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 55%, #6B2D10 100%);
+      padding: 56px 40px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 900px; margin: 0 auto; position: relative; }
+    .hero-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .hero-logo-dot {
+      width: 32px; height: 32px;
+      background: var(--orange);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-logo-dot span { color: white; font-weight: 900; font-size: 16px; }
+    .hero-logo-text { color: white; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
+    .hero h1 {
+      color: white;
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hero p { color: rgba(255,255,255,0.65); font-size: 16px; max-width: 560px; }
+    .hero-meta {
+      margin-top: 24px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: monospace;
+    }
+    .badge-white { background: rgba(255,255,255,0.15); color: white; }
+    .badge-orange { background: var(--orange); color: white; }
+    .badge-green { background: #16a34a; color: white; }
+
+    /* ── Layout ── */
+    .layout { display: flex; max-width: 1100px; margin: 0 auto; padding: 32px 24px; gap: 32px; }
+
+    /* ── Sidebar TOC ── */
+    .toc {
+      width: 220px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 24px;
+      align-self: flex-start;
+    }
+    .toc-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
+      font-family: monospace;
+    }
+    .toc ul { list-style: none; display: flex; flex-col: column; flex-direction: column; gap: 2px; }
+    .toc a {
+      display: block;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--ink-mid);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .toc a:hover { background: white; color: var(--purple); }
+    .toc-group { margin-top: 12px; }
+    .toc-group-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-soft);
+      padding: 0 10px;
+      margin-bottom: 4px;
+      font-family: monospace;
+    }
+
+    /* ── Main content ── */
+    .content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+
+    /* ── Section card ── */
+    .section {
+      background: white;
+      border: 1px solid var(--sand);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--sand);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+    .section-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      flex: 1;
+    }
+    .section-header .status {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: monospace;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .status-done { background: var(--green-light); color: var(--green); }
+    .status-partial { background: var(--amber-light); color: var(--amber); }
+    .section-body { padding: 20px 24px; }
+
+    /* ── Feature list ── */
+    .feature-list { display: flex; flex-direction: column; gap: 10px; }
+    .feature-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .feature-check {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .check-done { background: var(--green-light); color: var(--green); }
+    .check-partial { background: var(--amber-light); color: var(--amber); }
+    .feature-text { font-size: 14px; color: var(--ink); line-height: 1.5; }
+    .feature-text strong { color: var(--ink); font-weight: 600; }
+    .feature-text em { color: var(--ink-soft); font-style: normal; font-size: 13px; }
+
+    /* ── Two-col grid ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+
+    /* ── Info box ── */
+    .info-box {
+      background: var(--purple-light);
+      border: 1px solid #D4C8EC;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--ink-mid);
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+    .info-box strong { color: var(--purple); }
+
+    .warn-box {
+      background: var(--amber-light);
+      border: 1px solid #FDE68A;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--amber);
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    /* ── Code / URL ── */
+    code {
+      background: var(--parchment);
+      border: 1px solid var(--sand);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 13px;
+      font-family: monospace;
+      color: var(--purple);
+    }
+    .url-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--purple-dark);
+      color: rgba(255,255,255,0.85);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      margin: 2px 0;
+    }
+    .url-pill .method {
+      background: var(--orange);
+      color: white;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* ── Role table ── */
+    .role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
+    .role-card {
+      border: 1px solid var(--sand);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .role-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: white;
+    }
+    .role-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .role-label { font-size: 11px; color: var(--ink-soft); font-family: monospace; }
+    .role-access { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .access-chip {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-family: monospace;
+    }
+    .chip-yes { background: var(--green-light); color: var(--green); }
+    .chip-no { background: #F3F4F6; color: #9CA3AF; }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    .flow-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .flow-box {
+      background: var(--purple-light);
+      border: 1px solid #D4C8EC;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--purple);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .flow-box.orange { background: var(--orange-light); border-color: #FBBF9A; color: var(--orange); }
+    .flow-box.green { background: var(--green-light); border-color: #BBF7D0; color: var(--green); }
+    .flow-arrow {
+      width: 28px;
+      height: 2px;
+      background: var(--sand);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .flow-arrow::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: -4px;
+      border: 4px solid transparent;
+      border-left-color: var(--sand);
+    }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--sand); margin: 16px 0; }
+
+    /* ── Subsection ── */
+    .subsection-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
+      font-family: monospace;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-family: monospace;
+    }
+    .footer strong { color: var(--ink-mid); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .layout { flex-direction: column; padding: 16px; }
+      .toc { width: 100%; position: static; }
+      .hero { padding: 36px 20px 32px; }
+      .hero h1 { font-size: 26px; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── Print ── */
+    @media print {
+      .toc { display: none; }
+      .layout { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-logo">
+      <div class="hero-logo-dot"><span>C</span></div>
+      <span class="hero-logo-text">CHAPATECA</span>
+    </div>
+    <h1>Portal Interno — Manual Completo</h1>
+    <p>Documentação de todas as funcionalidades implementadas no portal digital da Chapateca.</p>
+    <div class="hero-meta">
+      <span class="badge badge-orange">v0.1</span>
+      <span class="badge badge-white">Next.js 15 · App Router</span>
+      <span class="badge badge-white">PostgreSQL · Prisma</span>
+      <span class="badge badge-white">Google Drive API</span>
+      <span class="badge badge-green">Deploy: Railway</span>
+    </div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- TOC -->
+  <nav class="toc">
+    <p class="toc-title">Índice</p>
+    <ul>
+      <li><a href="#stack">Stack Técnica</a></li>
+      <li><a href="#utilizadores">Utilizadores e Roles</a></li>
+      <li><a href="#autenticacao">Autenticação</a></li>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#galeria">Galeria do Terreno</a></li>
+      <li><a href="#relatorios">Relatórios de Campo</a></li>
+      <li><a href="#partilha">Partilha com Doadores</a></li>
+      <li><a href="#tarefas">Tarefas e Mensagens</a></li>
+      <li><a href="#definicoes">Definições (Admin)</a></li>
+      <li><a href="#ajuda">Ajuda e Suporte</a></li>
+      <li><a href="#api">Rotas de API</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+    </ul>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STACK -->
+    <div class="section" id="stack">
+      <div class="section-header">
+        <div class="section-icon" style="background:#EDE8F7">⚙️</div>
+        <h2>Stack Técnica</h2>
+        <span class="badge status-done status">Produção</span>
+      </div>
+      <div class="section-body">
+        <div class="two-col">
+          <div>
+            <p class="subsection-title">Frontend / Backend</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Next.js 15</strong> App Router — Server Components + Client Components</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Tailwind CSS</strong> com tokens personalizados (purple, orange, parchment)</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>TypeScript</strong> em toda a codebase</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Modo escuro</strong> via classe <code>.dark</code> com localStorage</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Design responsivo</strong> — funciona em telemóvel e computador</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="subsection-title">Infraestrutura</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>PostgreSQL</strong> via Prisma ORM — Railway (internal network)</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Google Drive API v3</strong> — OAuth2 ou Service Account</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Railway</strong> — deploy automático, <code>railway up</code></div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Prisma db push</strong> auto-executa no arranque via <code>railway.json</code></div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>GitHub</strong> — repositório <code>NiraslabDEV/Chapateca</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="info-box">
+          <strong>Variáveis de Ambiente obrigatórias:</strong> <code>DATABASE_URL</code>, <code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>, <code>GOOGLE_REFRESH_TOKEN</code>, <code>DRIVE_FOLDER_COMUNICACAO</code>. Senhas dos utilizadores são armazenadas como SHA-256 com email como salt.
+        </div>
+      </div>
+    </div>
+
+    <!-- UTILIZADORES -->
+    <div class="section" id="utilizadores">
+      <div class="section-header">
+        <div class="section-icon" style="background:#FFF0E8">👥</div>
+        <h2>Utilizadores e Roles</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size:14px;color:var(--ink-mid);margin-bottom:16px">13 utilizadores fixos definidos em <code>lib/roles.ts</code>. Cada utilizador tem email, initials, cor e grupo (admin / equipa).</p>
+
+        <p class="subsection-title">Direcção — Acesso Total</p>
+        <div class="role-grid">
+          <div class="role-card">
+            <div class="role-avatar" style="background:#461882">CO</div>
+            <div class="role-name">Constance</div>
+            <div class="role-label">constance@chapateca.org</div>
+            <div class="role-label">Administração Geral</div>
+            <div class="role-access">
+              <span class="access-chip chip-yes">Galeria</span>
+              <span class="access-chip chip-yes">Manuais</span>
+              <span class="access-chip chip-yes">Estratégia</span>
+              <span class="access-chip chip-yes">Financeiro</span>
+            </div>
+          </div>
+          <div class="role-card">
+            <div class="role-avatar" style="background:#461882">SZ</div>
+            <div class="role-name">Sonia Zahi</div>
+            <div class="role-label">sonia@chapateca.org</div>
+            <div class="role-label">Administração</div>
+            <div class="role-access">
+              <span class="access-chip chip-yes">Galeria</span>
+              <span class="access-chip chip-yes">Manuais</span>
+              <span class="access-chip chip-yes">Estratégia</span>
+              <span class="access-chip chip-yes">Financeiro</span>
+            </div>
+          </div>
+          <div class="role-card">
+            <div class="role-avatar" style="background:#461882">SG</div>
+            <div class="role-name">Shadia Gafur</div>
+            <div class="role-label">shadia@chapateca.org</div>
+            <div class="role-label">Administração</div>
+            <div class="role-access">
+              <span class="access-chip chip-yes">Galeria</span>
+              <span class="access-chip chip-yes">Manuais</span>
+              <span class="access-chip chip-yes">Estratégia</span>
+              <span class="access-chip chip-yes">Financeiro</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="subsection-title">Equipa de Campo — Apenas Galeria</p>
+        <div class="role-grid">
+          <div style="font-size:13px;color:var(--ink-mid)">
+            Judite · Lashinda · António · Eric · Rogério · Lucas · Laércio · Rosa · Milena · Ilda
+          </div>
+        </div>
+        <div class="info-box" style="margin-top:12px">
+          <strong>Acesso por defeito da equipa:</strong> apenas Galeria ativa. Admins podem activar módulos adicionais por utilizador nas Definições. As overrides ficam guardadas na base de dados por utilizador.
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTENTICAÇÃO -->
+    <div class="section" id="autenticacao">
+      <div class="section-header">
+        <div class="section-icon" style="background:#FFF0E8">🔐</div>
+        <h2>Autenticação</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <p class="subsection-title">Fluxo de Login</p>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-box">Escolher perfil</div>
+            <div style="font-size:11px;color:var(--ink-soft);font-family:monospace;margin-top:4px">/</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box">Introduzir senha</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box orange">1.º acesso?</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box orange">Definir senha própria</div>
+            <div style="font-size:11px;color:var(--ink-soft);font-family:monospace;margin-top:4px">/definir-senha</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box green">Portal</div>
+            <div style="font-size:11px;color:var(--ink-soft);font-family:monospace;margin-top:4px">/dashboard</div>
+          </div>
+        </div>
+
+        <div class="feature-list" style="margin-top:8px">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Senha por defeito:</strong> cada utilizador tem a sua via variável de ambiente <code>PASSWORD_CONSTANCE</code>, etc. Fallback para <code>1234</code> se não configurada.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Primeiro acesso:</strong> utilizador é obrigado a definir senha pessoal em <code>/definir-senha</code> antes de entrar no portal.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Hashing:</strong> SHA-256 com email como salt — <code>sha256(email:password)</code></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Cookie de sessão:</strong> <code>chapateca-role</code> — httpOnly, sameSite:lax, 7 dias</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Esqueci a senha:</strong> página <code>/esqueci-senha</code> com contactos da direcção (email + telefone)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Redefinição forçada:</strong> admin pode forçar qualquer utilizador a redefinir a senha no próximo login (flag <code>mustResetPassword</code>)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Middleware Next.js</strong> protege todas as rotas <code>/(portal)/</code> — redirige para login se sem cookie</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="section" id="dashboard">
+      <div class="section-header">
+        <div class="section-icon" style="background:#E8F5E0">📊</div>
+        <h2>Dashboard</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Saudação personalizada</strong> com o nome do utilizador e hora do dia</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>3 cartões de estatísticas em tempo real:</strong> Actividades este mês, Fotos este mês, Tarefas Pendentes — todos com dados reais da DB</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Grelha de módulos:</strong> cards para Galeria, Manuais, Estratégia, Financeiro — bloqueados para quem não tem acesso (cadeado)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Feed de actividade recente:</strong> últimos 5 álbuns carregados com nome do uploader, localização e contagem de fotos</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Top localizações:</strong> bairros com mais actividades registadas, exibidos como badges</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Fallback para mock data</strong> se a DB não estiver disponível — nunca mostra página vazia</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GALERIA -->
+    <div class="section" id="galeria">
+      <div class="section-header">
+        <div class="section-icon" style="background:#FFF0E8">📸</div>
+        <h2>Galeria do Terreno</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <p class="subsection-title">Listagem de Álbuns — <code>/galeria</code></p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Álbuns agrupados por mês</strong> com data, localização, contagem de fotos, uploader</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Badge de tipo de actividade</strong> (Distribuição de Livros, Formação, etc.) e contagem de participantes visíveis no card</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Botão "Ver"</strong> abre o detalhe do álbum com grelha de fotos e relatório</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Botão "Partilhar"</strong> gera link público para doadores e copia para clipboard</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="subsection-title">Upload de Fotos — <code>/galeria/upload</code></p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Formulário em 3 passos:</strong> (1) Seleccionar fotos, (2) Detalhes da actividade, (3) Sucesso</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Campos do passo 2:</strong> Local (obrigatório), Data (obrigatório), Nome da Actividade, Tipo de Actividade, Nº de Participantes, Observações</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Upload para Google Drive</strong> — pastas criadas automaticamente por ano/mês/bairro</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Cria um registo Album na DB</strong> ligando todas as fotos — base dos relatórios e partilha pública</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">Após upload, botão <strong>"Ver na Galeria"</strong> vai directo ao álbum criado</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="subsection-title">Detalhe do Álbum — <code>/galeria/[id]</code></p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Grelha de fotos</strong> — fotos reais servidas via proxy autenticado <code>/api/drive/image/[driveId]</code></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Download individual</strong> — botão "Guardar" aparece em hover sobre cada foto</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Secção de Relatório</strong> — mostra tipo de actividade, participantes e observações se preenchidos</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Botão Partilhar</strong> no header do álbum para gerar link de doador directamente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATÓRIOS -->
+    <div class="section" id="relatorios">
+      <div class="section-header">
+        <div class="section-icon" style="background:#E8F5E0">📋</div>
+        <h2>Relatórios de Campo</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size:14px;color:var(--ink-mid);margin-bottom:16px">Cada álbum de fotos pode ter um relatório associado, preenchido no momento do upload ou editável mais tarde.</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Tipo de Actividade:</strong> Distribuição de Livros, Formação, Visita de Campo, Feira de Leitura, Inauguração, Outro</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Número de participantes</strong> — campo numérico opcional</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Observações</strong> — texto livre com notas, contexto, resultados da actividade</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Modelo Album no Prisma</strong> — os dados ficam na DB ligados às fotos no Drive</div>
+          </div>
+        </div>
+        <div class="info-box">
+          <strong>Para que serve:</strong> quando os doadores pedem relatórios de actividades, toda a informação já está guardada — tipo, localização, data, participantes e notas. A página pública mostra estes dados automaticamente.
+        </div>
+      </div>
+    </div>
+
+    <!-- PARTILHA PÚBLICA -->
+    <div class="section" id="partilha">
+      <div class="section-header">
+        <div class="section-icon" style="background:#EDE8F7">🔗</div>
+        <h2>Partilha Pública com Doadores</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <p class="subsection-title">Como funciona</p>
+        <div class="flow" style="flex-wrap:wrap;gap:8px">
+          <div class="flow-step">
+            <div class="flow-box">Admin clica "Partilhar"</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box orange">Token gerado (12 hex chars)</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box orange">URL copiado para clipboard</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box green">Doador abre no browser</div>
+          </div>
+        </div>
+
+        <div class="feature-list" style="margin-top:12px">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>URL público:</strong> <code>/album/[token]</code> — sem login, abre em qualquer browser</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Página do doador:</strong> branding Chapateca, header gradient, info da actividade, grelha de fotos, observações</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Proxy seguro de fotos:</strong> <code>/api/photo/[token]/[driveId]</code> — verifica que a foto pertence ao álbum antes de servir (sem expor credenciais Google)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Token persistente:</strong> uma vez gerado, o mesmo link funciona sempre. Fica guardado em <code>Album.shareToken</code></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Middleware actualizado</strong> — rotas <code>/album/*</code> não precisam de autenticação</div>
+          </div>
+        </div>
+        <div class="info-box">
+          <strong>Ideal para WhatsApp:</strong> a Constance clica Partilhar, o URL é copiado automaticamente, e ela cola directamente numa mensagem. O doador abre uma página limpa sem precisar de criar conta.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAREFAS -->
+    <div class="section" id="tarefas">
+      <div class="section-header">
+        <div class="section-icon" style="background:#EDE8F7">✅</div>
+        <h2>Tarefas e Mensagens Internas</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size:14px;color:var(--ink-mid);margin-bottom:16px">Sistema de delegação de tarefas interno — admins atribuem tarefas a membros da equipa, que as recebem e confirmam execução.</p>
+
+        <p class="subsection-title">Fluxo completo</p>
+        <div class="flow" style="flex-wrap:wrap;gap:8px;margin-bottom:16px">
+          <div class="flow-step">
+            <div class="flow-box">Admin cria tarefa</div>
+            <div style="font-size:11px;color:var(--ink-soft);font-family:monospace;margin-top:4px">/tarefas</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box orange">Destinatário abre portal</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box orange">Popup de notificação</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box orange">"Recebi — vou tratar"</div>
+          </div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">
+            <div class="flow-box green">"Concluído" na inbox</div>
+          </div>
+        </div>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Criar tarefa</strong> — admins preenchem: Para (dropdown), Tarefa/Mensagem (obrigatório), Detalhe (opcional)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Popup ao abrir o portal</strong> — aparece automaticamente se há tarefas não lidas (estado <code>pending</code>). Mostra quem enviou, o texto e botões de acção.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>3 estados:</strong> <code>pending</code> (não vista) → <code>received</code> (vista, em progresso) → <code>done</code> (concluída)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Badge na sidebar</strong> — número de tarefas não lidas aparece ao lado de "Tarefas" na barra lateral</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Página /tarefas</strong> — Caixa de Entrada com todas as tarefas recebidas + (admins) secção Enviadas com estado de cada uma</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Botão "Concluído"</strong> — disponível na inbox quando a tarefa está em estado <em>received</em></div>
+          </div>
+        </div>
+        <div class="warn-box" style="margin-top:12px">
+          <strong>Email de notificação:</strong> ainda não implementado — fica para quando houver emails cadastrados na plataforma. A estrutura do código já suporta adicionar no servidor <code>markTaskReceived</code>.
+        </div>
+      </div>
+    </div>
+
+    <!-- DEFINIÇÕES -->
+    <div class="section" id="definicoes">
+      <div class="section-header">
+        <div class="section-icon" style="background:#EDE8F7">⚙️</div>
+        <h2>Definições e Painel Admin</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <div class="two-col">
+          <div>
+            <p class="subsection-title">Para todos os utilizadores</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Perfil Activo</strong> — nome, email, label do role</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Permissões de Acesso</strong> — quais módulos estão activados para este utilizador</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="subsection-title">Só para Admins</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Gestão de Utilizadores</strong> — lista de todos com avatar, email, estado da senha</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Toggles de acesso por módulo</strong> — activar/desactivar Galeria, Manuais, Estratégia, Financeiro por utilizador</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>"Forçar nova senha"</strong> — obriga o utilizador a definir senha nova no próximo login</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>"Definir senha"</strong> — admin define directamente a senha de outro utilizador via modal</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="info-box" style="margin-top:12px">
+          <strong>Estado da senha:</strong> cada utilizador mostra um de 3 estados: <em>Senha própria</em> (já definiu a sua), <em>Senha padrão</em> (ainda usa o default), <em>Deve redefinir</em> (admin forçou reset).
+        </div>
+      </div>
+    </div>
+
+    <!-- AJUDA -->
+    <div class="section" id="ajuda">
+      <div class="section-header">
+        <div class="section-icon" style="background:#E8F5E0">❓</div>
+        <h2>Ajuda e Suporte</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Suporte Técnico:</strong> WhatsApp directo para Gabriel dos Santos (+258 85 386 0621) — link clicável</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Direcção:</strong> email <code>info.chapateca@gmail.com</code> + telefone +258 84 149 9012</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>FAQ com 5 perguntas</strong> — dropdowns nativos HTML (<code>&lt;details&gt;</code>): carregar fotos, acesso a módulos, senha esquecida, partilha de álbuns, armazenamento</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Guias Rápidos:</strong> links directos para Carregar Fotos e Ver Galeria</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Versão do portal</strong> no rodapé — v0.1 · Maputo, Moçambique · Niraslab</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API -->
+    <div class="section" id="api">
+      <div class="section-header">
+        <div class="section-icon" style="background:#1A0836;color:white">🛣️</div>
+        <h2>Rotas de API</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">
+              <div class="url-pill"><span class="method">POST</span>/api/upload</div>
+              <em>Recebe ficheiros + metadados, cria Album na DB, faz upload para Drive, cria FileLogs</em>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">
+              <div class="url-pill"><span class="method">POST</span>/api/share/[fileId]</div>
+              <em>Gera link público via Drive API (permissions.create)</em>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">
+              <div class="url-pill"><span class="method">GET</span>/api/drive/image/[driveId]</div>
+              <em>Proxy autenticado — serve foto do Drive para utilizadores com sessão activa</em>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">
+              <div class="url-pill"><span class="method">GET</span>/api/photo/[token]/[driveId]</div>
+              <em>Proxy público — verifica shareToken antes de servir a foto (para página de doadores)</em>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">
+              <div class="url-pill"><span class="method">GET</span>/api/logout</div>
+              <em>Apaga cookie de sessão e redirige para login</em>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="subsection-title">Server Actions (Next.js)</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><code>generateShareToken(albumId)</code> — gera/devolve shareToken do álbum</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><code>createTask / markTaskReceived / markTaskDone</code> — gestão de tarefas</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><code>forcePasswordReset / adminSetPassword / updateUserAccess</code> — admin panel</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><code>loginAction / definirSenhaAction</code> — autenticação</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEMA -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:#E8F5E0">🗄️</div>
+        <h2>Modelo de Dados (Prisma)</h2>
+        <span class="badge status-done status">Implementado</span>
+      </div>
+      <div class="section-body">
+        <div class="two-col">
+          <div>
+            <p class="subsection-title">Modelos</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>User</strong> — id, name, email, role, passwordHash, mustResetPassword, accessGaleria/Manuais/Estrategia/Financas, uploads[], albums[]</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Album</strong> — id, activityName?, location, activityDate, activityType?, participants?, observations?, shareToken? @unique, uploadedBy, photos[]</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>FileLog</strong> — id, googleDriveId @unique, fileName, fileType, mimeType, category, activityName?, location?, activityDate?, albumId?, uploadedBy</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Task</strong> — id, fromEmail, toEmail, title, body?, status (pending/received/done), readAt?, doneAt?</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="subsection-title">Enums</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-done">✓</div>
+                <div class="feature-text"><strong>Role</strong> — DIRECAO, DAF, COMUNICACAO, CAMPO</div>
+              </div>
+            </div>
+            <div class="info-box" style="margin-top:12px">
+              <strong>Auto-migração:</strong> <code>npx prisma db push</code> corre automaticamente no Railway no arranque de cada deploy via <code>railway.json</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROADMAP -->
+    <div class="section" id="roadmap">
+      <div class="section-header">
+        <div class="section-icon" style="background:#FFF0E8">🚀</div>
+        <h2>Roadmap — Próximas Funcionalidades</h2>
+        <span class="badge status-partial status">Planeado</span>
+      </div>
+      <div class="section-body">
+        <div class="two-col">
+          <div>
+            <p class="subsection-title">Curto Prazo</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Notificações por email</strong> quando uma tarefa é atribuída (infra já preparada)</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Edição de álbum</strong> — alterar nome, tipo, participantes e observações após upload</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Módulo Manuais</strong> — upload e visualização de PDFs/documentos internos</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Módulo Estratégia</strong> — planos estratégicos, relatórios de impacto, metas</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Módulo Financeiro</strong> — orçamentos e relatórios financeiros (acesso DAF + Direcção)</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="subsection-title">Médio Prazo</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Calendário de actividades</strong> — planear e visualizar actividades futuras por bairro</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Exportar relatório PDF</strong> — gerar PDF de uma actividade com fotos + dados para enviar a doadores</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Página website pública</strong> — <code>www.chapateca.org</code> com mapa de actividades</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Estatísticas anuais</strong> — actividades por mês, bairros cobertos, total de participantes para relatório de impacto</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Multilingue</strong> — suporte a Inglês para relatórios enviados a doadores internacionais</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /layout -->
+
+<div class="footer">
+  <strong>Portal Chapateca</strong> · v0.1 · Maputo, Moçambique<br>
+  Desenvolvido por <strong>Niraslab</strong> · Actualizado em Maio 2026<br>
+  <span style="color:#D4C8EC">Adicionar features: actualizar este ficheiro portal-manual.html na raiz do projecto</span>
+</div>
+
+</body>
+</html>
