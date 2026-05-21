@@ -20,6 +20,7 @@ const isDriveReady = isOAuthReady || isServiceAccountReady
 
 const FOLDER_MAP: Record<string, string> = {
   FOTOS_TERRENO:  process.env.DRIVE_FOLDER_COMUNICACAO   ?? '',
+  MARKETING:      process.env.DRIVE_FOLDER_MARKETING     ?? process.env.DRIVE_FOLDER_COMUNICACAO ?? '',
   FINANCEIRO:     process.env.DRIVE_FOLDER_FINANCEIRO    ?? '',
   ESTRATEGIA:     process.env.DRIVE_FOLDER_ESTRATEGIA    ?? '',
   PROCEDIMENTOS:  process.env.DRIVE_FOLDER_PROCEDIMENTOS ?? '',

@@ -29,6 +29,56 @@ export async function POST(request: NextRequest) {
 
   const formData = await request.formData()
   const files = formData.getAll('files') as File[]
+  const uploadCategory = (formData.get('category') as string | null) ?? 'FOTOS_TERRENO'
+  const isMarketing = uploadCategory === 'MARKETING'
+
+  // ── Marketing upload (sem Album, sem localização obrigatória) ──────────
+  if (isMarketing) {
+    const tag = (formData.get('tag') as string | null)?.trim() || 'outro'
+    const assetTitle = (formData.get('assetTitle') as string | null)?.trim() || null
+    if (!files.length) return NextResponse.json({ error: 'Nenhum ficheiro seleccionado' }, { status: 400 })
+
+    const user = await ensureRoleUser(role)
+    const now = new Date()
+    const results: string[] = []
+
+    for (const file of files) {
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const filename = `marketing_${tag}_${file.name}`
+      let driveId: string
+      try {
+        driveId = await uploadFileToDrive({
+          buffer, filename,
+          mimeType: file.type || 'image/jpeg',
+          category: 'MARKETING',
+          activityDate: now,
+        })
+      } catch {
+        driveId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+      }
+      try {
+        const log = await prisma.fileLog.create({
+          data: {
+            googleDriveId: driveId,
+            fileName: file.name,
+            activityName: assetTitle || file.name.replace(/\.[^.]+$/, ''),
+            fileType: file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
+            mimeType: file.type,
+            category: 'MARKETING',
+            location: tag,
+            activityDate: now,
+            uploadedById: user.id,
+          },
+        })
+        results.push(log.id)
+      } catch {
+        results.push(driveId)
+      }
+    }
+    return NextResponse.json({ success: true, count: results.length })
+  }
+
+  // ── Upload de terreno (comportamento original) ─────────────────────────
   const location = formData.get('location') as string
   const activityDateStr = formData.get('activityDate') as string
   const activityName = (formData.get('activityName') as string | null)?.trim() || null
@@ -44,7 +94,6 @@ export async function POST(request: NextRequest) {
   const activityDate = new Date(activityDateStr)
   const user = await ensureRoleUser(role)
 
-  // Criar o Album antes do loop de ficheiros
   let albumId: string | null = null
   try {
     const album = await prisma.album.create({
@@ -68,13 +117,10 @@ export async function POST(request: NextRequest) {
   for (const file of files) {
     const buffer = Buffer.from(await file.arrayBuffer())
     const filename = `${activityDate.toISOString().slice(0, 10)}_${location}_${file.name}`
-
-    // Upload para o Drive (ou mock em caso de erro)
     let driveId: string
     try {
       driveId = await uploadFileToDrive({
-        buffer,
-        filename,
+        buffer, filename,
         mimeType: file.type || 'application/octet-stream',
         category: 'FOTOS_TERRENO',
         activityDate,
@@ -83,8 +129,6 @@ export async function POST(request: NextRequest) {
     } catch {
       driveId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
     }
-
-    // Registo na base de dados (ignora erro se DB não estiver configurada)
     try {
       const log = await prisma.fileLog.create({
         data: {
