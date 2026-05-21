@@ -402,7 +402,7 @@
       <li><a href="#utilizadores">Utilizadores e Roles</a></li>
       <li><a href="#autenticacao">Autenticação</a></li>
       <li><a href="#dashboard">Dashboard</a></li>
-      <li><a href="#galeria">Galeria do Terreno</a></li>
+      <li><a href="#galeria">Galeria (Terreno + Marketing)</a></li>
       <li><a href="#relatorios">Relatórios de Campo</a></li>
       <li><a href="#partilha">Partilha com Doadores</a></li>
       <li><a href="#tarefas">Tarefas e Mensagens</a></li>
@@ -654,15 +654,23 @@
     <div class="section" id="galeria">
       <div class="section-header">
         <div class="section-icon" style="background:#FFF0E8">📸</div>
-        <h2>Galeria do Terreno</h2>
+        <h2>Galeria</h2>
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
-        <p class="subsection-title">Listagem de Álbuns — <code>/galeria</code></p>
+
+        <p style="color:#555;font-size:0.97em;margin-bottom:1.2rem">A Galeria tem <strong>dois separadores</strong> na mesma página (<code>/galeria</code>): <strong>Galeria do Terreno</strong> para fotos de actividades de campo, e <strong>Marketing &amp; Marca</strong> para activos da marca (logos, peças gráficas, fotos de divulgação). Os separadores mostram badges com contagem de itens.</p>
+
+        <!-- ── SEPARADOR TERRENO ── -->
+        <p class="subsection-title">Separador — Galeria do Terreno</p>
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
-            <div class="feature-text"><strong>Álbuns agrupados por mês</strong> com data, localização, contagem de fotos, uploader</div>
+            <div class="feature-text"><strong>Álbuns reais da base de dados</strong> agrupados por mês — sem dados fictícios. Se não houver álbuns mostra empty state com CTA para carregar</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Álbuns agrupados por mês</strong> com data, localização, contagem de fotos e uploader</div>
           </div>
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
@@ -679,7 +687,7 @@
         </div>
 
         <div class="divider"></div>
-        <p class="subsection-title">Upload de Fotos — <code>/galeria/upload</code></p>
+        <p class="subsection-title">Upload de Fotos de Terreno — <code>/galeria/upload</code></p>
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
@@ -691,7 +699,7 @@
           </div>
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
-            <div class="feature-text"><strong>Upload para Google Drive</strong> — pastas criadas automaticamente por ano/mês/bairro</div>
+            <div class="feature-text"><strong>Upload para Google Drive</strong> — pasta <code>04. Comunicacao e Terreno/[Ano]/[MM_Mes]/[Bairro]</code> criada automaticamente</div>
           </div>
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
@@ -723,6 +731,62 @@
             <div class="feature-text"><strong>Botão Partilhar</strong> no header do álbum para gerar link de doador directamente</div>
           </div>
         </div>
+
+        <div class="divider"></div>
+        <!-- ── SEPARADOR MARKETING ── -->
+        <p class="subsection-title">Separador — Marketing &amp; Marca</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Activos agrupados por categoria:</strong> Logótipo e Marca · Peças Gráficas · Fotos de Divulgação · Templates · Vídeos · Outros Activos</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Grelha de thumbnails</strong> — imagens (JPG/PNG/SVG/WebP) mostradas via proxy autenticado <code>/api/drive/image/[driveId]</code>; outros formatos (PDF, AI, PSD, vídeo) mostram placeholder colorido com a extensão</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Hover sobre thumbnail</strong> revela título do activo e botão <em>Baixar</em></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Download via proxy doc</strong> — <code>/api/drive/doc/[driveId]?download=1</code> serve o ficheiro com <code>Content-Disposition: attachment</code></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Empty state</strong> quando a DB está vazia: mensagem explicativa sem dados fictícios</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="subsection-title">Upload de Activos de Marketing — <code>/galeria/marketing/upload</code></p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Selector de categoria</strong> — chips coloridos para escolher Logótipo, Peças Gráficas, Fotos de Divulgação, Templates, Vídeos, Outros</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Título / Descrição</strong> (opcional) — nome personalizado que aparece no hover da grelha</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Multi-ficheiro:</strong> aceita JPG, PNG, SVG, PDF, AI, PSD, EPS, vídeos</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Upload para Google Drive</strong> — pasta <code>Marketing/[Ano]/[MM_Mes]</code> via <code>DRIVE_FOLDER_MARKETING</code> (fallback para pasta Comunicação)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Regista FileLog</strong> com <code>category=MARKETING</code> e a categoria (tag) em <code>location</code> — sem criar Album</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text">Após upload, ecrã de sucesso com botão <em>"Ver em Marketing &amp; Marca"</em> e opção de carregar mais</div>
+          </div>
+        </div>
+
       </div>
     </div>
 
