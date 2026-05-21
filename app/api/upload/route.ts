@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
-  if (!['CAMPO', 'COMUNICACAO', 'DIRECAO'].includes(role)) {
+  // A galeria está acessível a todos os utilizadores activos (todos têm access.galeria=true por defeito).
+  // O check feito aqui é apenas garantir que o role existe em ROLES — getRoleFromCookie já garante isso.
+  const userConfig = ROLES[role]
+  if (!userConfig.access.galeria) {
     return NextResponse.json({ error: 'Sem permissão para upload de fotos' }, { status: 403 })
   }
 

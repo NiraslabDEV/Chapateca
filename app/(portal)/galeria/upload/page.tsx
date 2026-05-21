@@ -28,6 +28,7 @@ export default function UploadPage() {
   const [observations, setObservations] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadedId, setUploadedId] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleFiles = (picked: FileList | null) => {
@@ -37,6 +38,7 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (!files.length || !location) return
     setUploading(true)
+    setUploadError(null)
     try {
       const fd = new FormData()
       files.forEach(f => fd.append('files', f))
@@ -47,14 +49,25 @@ export default function UploadPage() {
       fd.append('participants', participants)
       fd.append('observations', observations)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
-      let data: { albumId?: string } = { albumId: 'demo-id' }
-      try { data = await res.json() } catch { /* resposta não-JSON — modo demo */ }
-      setUploadedId(data.albumId ?? 'demo-id')
-    } catch {
-      setUploadedId('demo-id')
+      const data = await res.json().catch(() => ({} as Record<string, unknown>))
+      if (!res.ok) {
+        setUploadError(typeof data.error === 'string' ? data.error : `Erro ${res.status}: upload falhou`)
+        return
+      }
+      if (data.albumError) {
+        setUploadError(`Ficheiro enviado para o Drive mas Album não foi criado: ${data.albumError}`)
+        return
+      }
+      if (!data.albumId) {
+        setUploadError('Upload concluído mas o Album não foi criado. As fotos não vão aparecer na galeria.')
+        return
+      }
+      setUploadedId(typeof data.albumId === 'string' ? data.albumId : null)
+      setStep(3)
+    } catch (e) {
+      setUploadError((e as Error).message || 'Erro de ligação ao servidor')
     } finally {
       setUploading(false)
-      setStep(3)
     }
   }
 
@@ -221,6 +234,13 @@ export default function UploadPage() {
                 </div>
               </div>
             </div>
+
+            {uploadError && (
+              <div className="mt-6 p-3.5 border border-red-300 bg-red-50 rounded-xl text-sm text-red-800">
+                <strong className="block mb-0.5">Não foi possível concluir o upload:</strong>
+                {uploadError}
+              </div>
+            )}
 
             <div className="flex gap-3 mt-8">
               <button onClick={() => setStep(1)}
