@@ -225,6 +225,46 @@
       margin-top: 12px;
     }
 
+    /* ── Card "Em palavras simples" — para leitores não técnicos ── */
+    .simple-card {
+      background: linear-gradient(135deg, #FFF5E8 0%, #FFE8D6 100%);
+      border: 1.5px solid #F5A26B;
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(232,101,42,0.08);
+    }
+    .simple-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .simple-card-icon {
+      width: 32px; height: 32px;
+      background: var(--orange);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .simple-card-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #6B2D10;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .simple-card-body {
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: #3a2410;
+    }
+    .simple-card-body p { margin-bottom: 8px; }
+    .simple-card-body p:last-child { margin-bottom: 0; }
+    .simple-card-body strong { color: var(--orange); font-weight: 700; }
+
     /* ── Code / URL ── */
     code {
       background: var(--parchment);
@@ -427,6 +467,17 @@
       </div>
       <div class="section-body">
 
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p><strong>Regra de ouro:</strong> a equipa só deve carregar fotos e documentos <strong>através do portal</strong>. Nunca abrir o Google Drive e arrastar ficheiros para lá manualmente.</p>
+            <p>Porquê? Porque o portal mantém um "caderno de notas" interno com todos os ficheiros — quem carregou, quando, em que pasta. Se alguém colocar uma foto directamente no Drive, ela <strong>não aparece no portal</strong> (ninguém a vê, nem é possível mandar aos doadores). Não estraga nada, mas é como esconder a foto numa gaveta que ninguém abre.</p>
+          </div>
+        </div>
+
         <p style="font-size:1.05em;line-height:1.55;color:#3a2e1c"><strong>Carrega ficheiros SEMPRE pelo Portal — nunca diretamente no Google Drive.</strong></p>
 
         <p style="color:#555;margin:0.8rem 0 1.2rem">O Portal não lê o Drive em tempo real — lê a base de dados Postgres onde cada upload tem um registo. Se um ficheiro for colocado manualmente no Drive, fica <strong>invisível no portal</strong> (não rebenta nada, mas ninguém o vê na Galeria, Manuais, Financeiro nem nas listagens, e doadores não recebem o link).</p>
@@ -510,6 +561,16 @@
         <span class="badge status-done status">Produção</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>Esta secção lista as <strong>ferramentas que o portal usa "por baixo do capô"</strong> para funcionar — como os ingredientes de uma receita.</p>
+            <p>Não precisas de perceber o que é cada uma. O importante é saber que o portal está construído com tecnologias modernas e fiáveis, mantidas por empresas grandes (Google, Microsoft) — não é uma "solução caseira" que pode partir-se facilmente.</p>
+          </div>
+        </div>
         <div class="two-col">
           <div>
             <p class="subsection-title">Frontend / Backend</p>
@@ -576,6 +637,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>Cada pessoa da equipa tem o <strong>seu próprio acesso</strong> ao portal — com nome, email e uma "função" (direcção, finanças, comunicação ou campo).</p>
+            <p>A função define <strong>o que cada pessoa pode ver e fazer</strong>: a direcção vê tudo, a contabilista só vê o financeiro, a equipa de campo só carrega fotos das actividades. É como dar chaves diferentes para divisões diferentes da casa.</p>
+          </div>
+        </div>
         <p style="font-size:14px;color:var(--ink-mid);margin-bottom:16px">13 utilizadores fixos definidos em <code>lib/roles.ts</code>. Cada utilizador tem email, initials, cor e grupo (admin / equipa).</p>
 
         <p class="subsection-title">Direcção — Acesso Total</p>
@@ -639,6 +710,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>É a <strong>porta de entrada</strong> do portal. Quando alguém entra, escolhe o seu perfil (Constance, Carlos, Beatriz, etc.) e digita uma senha — depois disso o portal "sabe" quem é e mostra-lhe só o que ela pode ver.</p>
+            <p>Da primeira vez que cada pessoa entra, define a sua senha pessoal. Se esquecer, a direcção pode <strong>reiniciar a senha</strong> nas Definições — não há perigo de ninguém ficar preso fora do sistema.</p>
+          </div>
+        </div>
         <p class="subsection-title">Fluxo de Login</p>
         <div class="flow">
           <div class="flow-step">
@@ -706,6 +787,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>O Dashboard é a <strong>página de entrada</strong> — como o "ecrã principal" de um telemóvel. Mostra de relance o que aconteceu recentemente: quem carregou fotos, quantas actividades houve este mês, tarefas pendentes.</p>
+            <p>É o sítio para onde a direcção olha de manhã para ver <strong>como está a operação</strong> sem ter de abrir cada módulo um a um.</p>
+          </div>
+        </div>
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
@@ -743,6 +834,18 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>A Galeria é o <strong>álbum digital da Chapateca</strong> — onde vivem todas as fotos da organização. Tem dois separadores:</p>
+            <p>📷 <strong>Galeria do Terreno</strong> — fotos das actividades nos bairros (distribuição de livros, formações, etc.). Cada actividade fica num "álbum" com data, local e quem participou. A partir destas fotos pode-se gerar um link para mostrar aos doadores.</p>
+            <p>🎨 <strong>Marketing &amp; Marca</strong> — onde fica o logótipo, peças gráficas, fotos para Instagram e materiais de divulgação. É a "biblioteca da marca" sempre à mão.</p>
+          </div>
+        </div>
 
         <p style="color:#555;font-size:0.97em;margin-bottom:1.2rem">A Galeria tem <strong>dois separadores</strong> na mesma página (<code>/galeria</code>): <strong>Galeria do Terreno</strong> para fotos de actividades de campo, e <strong>Marketing &amp; Marca</strong> para activos da marca (logos, peças gráficas, fotos de divulgação). Os separadores mostram badges com contagem de itens.</p>
 
@@ -883,6 +986,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>Quando a equipa carrega fotos de uma actividade, pode <strong>responder a perguntas simples</strong> sobre o que aconteceu: que tipo de actividade era, quantas pessoas participaram, observações importantes.</p>
+            <p>Estas respostas ficam guardadas junto às fotos e aparecem automaticamente quando se gera um link para os doadores — em vez de só verem fotos soltas, recebem <strong>uma história completa</strong> da actividade.</p>
+          </div>
+        </div>
         <p style="font-size:14px;color:var(--ink-mid);margin-bottom:16px">Cada álbum de fotos pode ter um relatório associado, preenchido no momento do upload ou editável mais tarde.</p>
         <div class="feature-list">
           <div class="feature-item">
@@ -916,6 +1029,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>Imagina que queres mostrar a um doador as fotos de uma actividade <strong>sem ter de o convidar para o portal</strong>. Clicas em "Partilhar" e o portal gera um <strong>link único</strong> que podes mandar por WhatsApp, email ou mensagem.</p>
+            <p>Quem recebe o link vê as fotos numa <strong>página bonita e simples</strong>, sem precisar de senha nem de instalar nada. É como mandar um postal digital — privado (só quem tem o link entra), mas sem complicações para o doador.</p>
+          </div>
+        </div>
         <p class="subsection-title">Como funciona</p>
         <div class="flow" style="flex-wrap:wrap;gap:8px">
           <div class="flow-step">
@@ -971,6 +1094,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>É o <strong>"recado interno"</strong> da equipa. A direcção pode mandar uma tarefa a alguém (ex: "Beatriz, prepara o relatório de Maxaquene até sexta") e a pessoa recebe no portal, marca como recebida e, quando termina, marca como feita.</p>
+            <p>Substitui mensagens dispersas em WhatsApp/email — tudo fica registado, com data, autor e estado. <strong>Ninguém esquece tarefas</strong> e a direcção vê de relance o que está pendente.</p>
+          </div>
+        </div>
         <p style="font-size:14px;color:var(--ink-mid);margin-bottom:16px">Sistema de delegação de tarefas interno — admins atribuem tarefas a membros da equipa, que as recebem e confirmam execução.</p>
 
         <p class="subsection-title">Fluxo completo</p>
@@ -1037,6 +1170,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>É o <strong>"painel de controlo"</strong> do portal — onde a direcção gere o sistema. Aqui é possível: alterar a própria senha, mudar para modo escuro, reiniciar a senha de um colaborador que esqueceu, ou activar/desactivar o acesso de alguém a um módulo.</p>
+            <p>Para utilizadores normais mostra apenas o seu perfil. Para a direcção mostra <strong>tudo o que é preciso para administrar a equipa</strong> sem precisar de chamar um técnico.</p>
+          </div>
+        </div>
         <div class="two-col">
           <div>
             <p class="subsection-title">Para todos os utilizadores</p>
@@ -1087,6 +1230,18 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>É o <strong>"arquivo digital da contabilidade"</strong>. A contabilista carrega orçamentos, relatórios, facturas e recibos em formato PDF/Excel/Word — todos ficam organizados em pastas (ex: "2026 Orçamento", "Relatórios Trimestrais").</p>
+            <p>Clica num documento para o <strong>ver imediatamente na própria página</strong> (sem descarregar) ou faz download para imprimir. Só a direcção e contabilista têm acesso — confidencialidade total.</p>
+            <p>Funciona igual em <strong>Manuais e Estratégia</strong> — mesmo sistema de pastas e visualização inline.</p>
+          </div>
+        </div>
 
         <p class="subsection-title">Listagem de Documentos — <code>/financas</code></p>
         <div class="feature-list">
@@ -1204,6 +1359,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>Se algo der errado ou tiveres uma dúvida, esta página tem o <strong>contacto directo do suporte</strong> (WhatsApp do Gabriel) e este manual sempre acessível.</p>
+            <p>Não é preciso decorar nada — basta vir aqui e clicar no link para falar com quem mantém o portal.</p>
+          </div>
+        </div>
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
@@ -1237,6 +1402,16 @@
         <span class="badge status-done status">Implementado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>Esta secção é <strong>só para o programador</strong> — lista os "endereços internos" que o portal usa para falar com a base de dados e com o Google Drive. É como a lista de extensões telefónicas de um escritório.</p>
+            <p>A direcção pode <strong>ignorar esta secção</strong> sem problema. Está aqui apenas para futuras manutenções ou se algum dia houver outro técnico a trabalhar no portal.</p>
+          </div>
+        </div>
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
@@ -1366,6 +1541,16 @@
         <span class="badge status-partial status">Planeado</span>
       </div>
       <div class="section-body">
+        <div class="simple-card">
+          <div class="simple-card-header">
+            <div class="simple-card-icon">💬</div>
+            <div class="simple-card-title">Em palavras simples</div>
+          </div>
+          <div class="simple-card-body">
+            <p>É a <strong>"lista de desejos"</strong> do portal — funcionalidades que ainda não existem mas estão planeadas para os próximos meses. Por exemplo: receber email automático quando alguém te atribui uma tarefa, ou poder exportar relatórios em PDF.</p>
+            <p>Esta lista evolui conforme as necessidades da Chapateca. Se a direcção quiser adicionar algo novo, é só dizer ao Gabriel.</p>
+          </div>
+        </div>
         <div class="two-col">
           <div>
             <p class="subsection-title">Curto Prazo</p>
