@@ -31,6 +31,18 @@ model User {
   uploads      FileLog[]
 }
 
+model Task {
+  id        String    @id @default(cuid())
+  fromEmail String
+  toEmail   String
+  title     String
+  body      String?
+  status    String    @default("pending") // pending | received | done
+  readAt    DateTime?
+  doneAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
 model FileLog {
   id            String    @id @default(cuid())
   googleDriveId String    @unique

@@ -6,23 +6,25 @@ import Topbar from './topbar'
 import Sidebar from './sidebar'
 import type { RoleKey } from '@/lib/roles'
 import type { EffectiveAccess } from '@/app/(portal)/layout'
+import TaskPopup from '@/components/tarefas/task-popup'
+import type { PendingTask } from '@/components/tarefas/task-popup'
 
 interface Props {
   role: RoleKey
   effectiveAccess: EffectiveAccess
+  pendingTask: PendingTask | null
+  unreadCount: number
   children: React.ReactNode
 }
 
-export default function PortalLayoutClient({ role, effectiveAccess, children }: Props) {
+export default function PortalLayoutClient({ role, effectiveAccess, pendingTask, unreadCount, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
 
-  // Fecha sidebar ao navegar
   useEffect(() => {
     setSidebarOpen(false)
   }, [pathname])
 
-  // Bloqueia scroll do body quando sidebar aberta no mobile
   useEffect(() => {
     if (sidebarOpen) {
       document.body.style.overflow = 'hidden'
@@ -54,7 +56,12 @@ export default function PortalLayoutClient({ role, effectiveAccess, children }: 
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
           'flex-shrink-0',
         ].join(' ')}>
-          <Sidebar role={role} effectiveAccess={effectiveAccess} onClose={() => setSidebarOpen(false)} />
+          <Sidebar
+            role={role}
+            effectiveAccess={effectiveAccess}
+            unreadCount={unreadCount}
+            onClose={() => setSidebarOpen(false)}
+          />
         </div>
 
         {/* Conteúdo principal */}
@@ -65,6 +72,8 @@ export default function PortalLayoutClient({ role, effectiveAccess, children }: 
         </main>
 
       </div>
+
+      {pendingTask && <TaskPopup task={pendingTask} key={pendingTask.id} />}
     </div>
   )
 }

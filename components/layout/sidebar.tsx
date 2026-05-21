@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, BookOpen, Target, Wallet, Camera, Settings, HelpCircle, Lock, LogOut, X, Moon, Sun } from 'lucide-react'
+import { Home, BookOpen, Target, Wallet, Camera, CheckSquare, Settings, HelpCircle, Lock, LogOut, X, Moon, Sun } from 'lucide-react'
 import { ROLES, type RoleKey } from '@/lib/roles'
 import type { EffectiveAccess } from '@/app/(portal)/layout'
 import RoleBadge from '@/components/ui/role-badge'
@@ -10,11 +10,12 @@ import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 
 const NAV_ITEMS = [
-  { href: '/dashboard',  label: 'Início',           icon: Home,     key: null },
-  { href: '/manuais',    label: 'Manuais e Guias',  icon: BookOpen, key: 'manuais'    as const },
-  { href: '/estrategia', label: 'Estratégica',       icon: Target,   key: 'estrategia' as const },
-  { href: '/financas',   label: 'Financeiro',        icon: Wallet,   key: 'financas'   as const },
-  { href: '/galeria',    label: 'Galeria Campo',     icon: Camera,   key: 'galeria'    as const },
+  { href: '/dashboard',  label: 'Início',           icon: Home,         key: null },
+  { href: '/manuais',    label: 'Manuais e Guias',  icon: BookOpen,     key: 'manuais'    as const },
+  { href: '/estrategia', label: 'Estratégica',       icon: Target,       key: 'estrategia' as const },
+  { href: '/financas',   label: 'Financeiro',        icon: Wallet,       key: 'financas'   as const },
+  { href: '/galeria',    label: 'Galeria Campo',     icon: Camera,       key: 'galeria'    as const },
+  { href: '/tarefas',    label: 'Tarefas',           icon: CheckSquare,  key: null },
 ]
 
 const SECONDARY = [
@@ -25,10 +26,11 @@ const SECONDARY = [
 interface SidebarProps {
   role: RoleKey
   effectiveAccess: EffectiveAccess
+  unreadCount: number
   onClose?: () => void
 }
 
-export default function Sidebar({ role, effectiveAccess, onClose }: SidebarProps) {
+export default function Sidebar({ role, effectiveAccess, unreadCount, onClose }: SidebarProps) {
   const pathname = usePathname()
   const r = ROLES[role]
   const [dark, setDark] = useState(false)
@@ -94,6 +96,11 @@ export default function Sidebar({ role, effectiveAccess, onClose }: SidebarProps
               <Icon size={18} className={active && !locked ? 'text-gold' : ''} />
               <span className="flex-1">{item.label}</span>
               {locked && <Lock size={12} className="text-ink-soft" />}
+              {item.href === '/tarefas' && unreadCount > 0 && (
+                <span className="w-5 h-5 rounded-full bg-[#461882] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
           )
         })}
