@@ -12,7 +12,10 @@ async function loginAction(formData: FormData) {
 
   if (!Object.keys(ROLES).includes(role)) redirect('/?erro=perfil')
 
-  const validPassword = process.env.PORTAL_PASSWORD ?? '1234'
+  // Cada utilizador tem a sua variável: PASSWORD_CONSTANCE, PASSWORD_SONIA, etc.
+  // Fallback: PORTAL_PASSWORD (senha partilhada, se definida)
+  const envKey = `PASSWORD_${role.toUpperCase()}`
+  const validPassword = process.env[envKey] ?? process.env.PORTAL_PASSWORD ?? '1234'
   if (password !== validPassword) redirect('/?erro=senha')
 
   const store = await cookies()
