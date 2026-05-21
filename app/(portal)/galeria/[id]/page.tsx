@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { getRoleFromCookie } from '@/lib/roles'
-import { ArrowLeft, MapPin, Calendar, Download, ExternalLink } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Download } from 'lucide-react'
 
 const THUMB_COLORS = [
   'linear-gradient(135deg, #6b8e5a, #8aae72)',
@@ -17,7 +18,6 @@ const MOCK_FILES = Array.from({ length: 8 }, (_, i) => ({
   id: `mock-${i}`,
   fileName: `foto_${String(i + 1).padStart(2, '0')}.jpg`,
   googleDriveId: '',
-  shareLink: null as string | null,
   mimeType: 'image/jpeg',
 }))
 
@@ -35,19 +35,11 @@ export default async function AlbumPage({
   if (!role) redirect('/')
 
   const { id } = await params
-
-  // Mock fallback para IDs que não são cuid
   const isMock = /^\d+$/.test(id)
 
-  type AlbumInfo = {
-    title: string
-    location: string
-    date: Date
-    uploaderName: string
-  }
-
+  type AlbumInfo = { title: string; location: string; date: Date; uploaderName: string }
   let albumInfo: AlbumInfo | null = null
-  let files: { id: string; fileName: string; googleDriveId: string; shareLink: string | null; mimeType: string }[] = []
+  let files: { id: string; fileName: string; googleDriveId: string; mimeType: string }[] = []
 
   if (!isMock) {
     try {
@@ -57,7 +49,6 @@ export default async function AlbumPage({
       })
       if (!anchor) return notFound()
 
-      // Busca todos os ficheiros do mesmo local + data
       const related = await prisma.fileLog.findMany({
         where: {
           category: 'FOTOS_TERRENO',
@@ -78,7 +69,6 @@ export default async function AlbumPage({
         id: f.id,
         fileName: f.fileName,
         googleDriveId: f.googleDriveId,
-        shareLink: f.shareLink,
         mimeType: f.mimeType,
       }))
     } catch {
@@ -86,7 +76,6 @@ export default async function AlbumPage({
     }
   }
 
-  // Mock data
   if (isMock || !albumInfo) {
     const MOCK_TITLES = ['', 'Actividade Malhangalene', 'Distribuição de Livros', 'Formação de Voluntários', 'Feira de Leitura', 'Visita Chamanculo']
     const MOCK_LOCS = ['', 'Malhangalene', 'Polana Caniço', 'Sede', 'Maxaquene', 'Chamanculo']
@@ -123,39 +112,53 @@ export default async function AlbumPage({
       {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {files.map((file, idx) => {
-          const isMockFile = file.googleDriveId.startsWith('mock-') || file.googleDriveId === ''
-          const driveViewUrl = isMockFile
-            ? null
-            : `https://drive.google.com/file/d/${file.googleDriveId}/view`
+          const isReal = file.googleDriveId && !file.googleDriveId.startsWith('mock-')
+          const proxyUrl = isReal ? `/api/drive/image/${file.googleDriveId}` : null
+          const isImage = file.mimeType.startsWith('image/')
 
           return (
-            <div key={file.id} className="group relative rounded-2xl overflow-hidden border border-sand-light
-                                          hover:border-forest-light hover:shadow-[0_4px_20px_rgba(22,20,18,0.12)]
-                                          transition-all">
+            <div key={file.id}
+                 className="group relative rounded-2xl overflow-hidden border border-sand-light
+                            hover:border-forest-light hover:shadow-[0_4px_20px_rgba(22,20,18,0.12)]
+                            transition-all bg-white">
               {/* Thumbnail */}
-              <div className="aspect-square w-full flex items-center justify-center relative"
-                   style={{ background: THUMB_COLORS[idx % THUMB_COLORS.length] }}>
-                <span className="text-[11px] text-white/60 font-mono uppercase tracking-wider px-2 py-1 bg-black/20 rounded">
-                  {isMockFile ? 'preview' : file.mimeType.split('/')[1]?.toUpperCase() ?? 'IMG'}
-                </span>
-
-                {/* Overlay on hover */}
-                {driveViewUrl && (
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity
-                                  flex items-center justify-center gap-2">
-                    <a href={driveViewUrl} target="_blank" rel="noopener noreferrer"
-                       className="flex items-center gap-1 px-3 py-1.5 bg-white/90 rounded-full text-[11px] font-semibold text-ink hover:bg-white transition-colors">
-                      <ExternalLink size={11} /> Abrir
-                    </a>
+              <div className="aspect-square w-full relative overflow-hidden">
+                {proxyUrl && isImage ? (
+                  <Image
+                    src={proxyUrl}
+                    alt={file.fileName}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center"
+                       style={{ background: THUMB_COLORS[idx % THUMB_COLORS.length] }}>
+                    <span className="text-[11px] text-white/60 font-mono uppercase tracking-wider px-2 py-1 bg-black/20 rounded">
+                      {isReal ? file.mimeType.split('/')[1]?.toUpperCase() : 'demo'}
+                    </span>
                   </div>
+                )}
+
+                {/* Download overlay on hover (fotos reais) */}
+                {proxyUrl && (
+                  <a href={proxyUrl} download={file.fileName}
+                     className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity
+                                flex items-center justify-center">
+                    <span className="flex items-center gap-1.5 px-4 py-2 bg-white/90 rounded-full
+                                     text-[12px] font-semibold text-ink hover:bg-white transition-colors">
+                      <Download size={13} /> Guardar
+                    </span>
+                  </a>
                 )}
               </div>
 
-              {/* Info bar */}
-              <div className="px-3 py-2 bg-white flex items-center justify-between gap-2">
-                <span className="text-[11px] text-ink-soft font-mono truncate">{file.fileName}</span>
-                {driveViewUrl && (
-                  <a href={driveViewUrl} target="_blank" rel="noopener noreferrer"
+              {/* Filename bar */}
+              <div className="px-3 py-2 flex items-center gap-2">
+                <span className="text-[11px] text-ink-soft font-mono truncate flex-1">{file.fileName}</span>
+                {proxyUrl && (
+                  <a href={proxyUrl} download={file.fileName}
                      className="flex-shrink-0 text-ink-soft hover:text-ink transition-colors">
                     <Download size={12} />
                   </a>
