@@ -95,7 +95,7 @@ export async function GET(
       { responseType: 'arraybuffer' }
     )
 
-    let buffer = Buffer.from(driveRes.data as ArrayBuffer)
+    let buffer: Buffer = Buffer.from(driveRes.data as ArrayBuffer)
     let contentType = mimeType
 
     // Redimensiona com sharp se for imagem rasterizada e width foi pedido.
@@ -103,11 +103,12 @@ export async function GET(
     const isRasterImage = mimeType.startsWith('image/') && mimeType !== 'image/svg+xml' && mimeType !== 'image/gif'
     if (width > 0 && isRasterImage) {
       try {
-        buffer = await sharp(buffer)
+        const resized = await sharp(buffer)
           .rotate() // respeita orientação EXIF (fotos de telemóvel)
           .resize(width, undefined, { withoutEnlargement: true, fit: 'inside' })
           .webp({ quality: 82 })
           .toBuffer()
+        buffer = Buffer.from(resized)
         contentType = 'image/webp'
       } catch (resizeErr) {
         console.error('[Drive Image Proxy] Resize failed, returning original:', (resizeErr as Error).message)

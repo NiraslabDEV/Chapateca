@@ -91,17 +91,18 @@ export async function GET(
       { responseType: 'arraybuffer' }
     )
 
-    let buffer = Buffer.from(driveRes.data as ArrayBuffer)
+    let buffer: Buffer = Buffer.from(driveRes.data as ArrayBuffer)
     let contentType = mimeType
 
     const isRasterImage = mimeType.startsWith('image/') && mimeType !== 'image/svg+xml' && mimeType !== 'image/gif'
     if (width > 0 && isRasterImage) {
       try {
-        buffer = await sharp(buffer)
+        const resized = await sharp(buffer)
           .rotate()
           .resize(width, undefined, { withoutEnlargement: true, fit: 'inside' })
           .webp({ quality: 82 })
           .toBuffer()
+        buffer = Buffer.from(resized)
         contentType = 'image/webp'
       } catch (resizeErr) {
         console.error('[Public Photo Proxy] Resize failed, returning original:', (resizeErr as Error).message)
