@@ -174,6 +174,21 @@ export default async function LoginPage({
             <span className="tracking-wider uppercase">Manual</span>
           </a>
         </div>
+
+        {/* Credit — desenvolvido por LeapFrog */}
+        <div className="flex flex-col items-center gap-0.5 mt-4">
+          <p className="text-[10px] text-white/30 font-mono tracking-wide">
+            Desenvolvido por
+          </p>
+          <p className="text-[12px] text-white/55 font-semibold tracking-[0.08em]">
+            🐸 <span className="text-white/75">LeapFrog</span>
+            <span className="text-white/35 mx-1.5">·</span>
+            <span className="text-white/50">Saltos Tecnológicos</span>
+          </p>
+          <p className="text-[9px] text-white/25 font-mono uppercase tracking-[0.12em] mt-0.5">
+            Desenvolvimento de Softwares
+          </p>
+        </div>
       </div>
     </div>
   )
