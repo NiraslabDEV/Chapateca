@@ -3,10 +3,11 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { getRoleFromCookie, ROLES } from '@/lib/roles'
-import { Upload, MapPin, Calendar, Image as ImageIcon } from 'lucide-react'
+import { Upload, MapPin, Calendar, Image as ImageIcon, FolderOpen } from 'lucide-react'
 import { ACTIVITY_TYPES } from '@/lib/activity-types'
 import AlbumActions from '@/components/galeria/album-actions'
 import MarketingGrid from '@/components/galeria/marketing-grid'
+import DriveBrowser from '@/components/galeria/drive-browser'
 import { cn } from '@/lib/utils'
 
 const THUMB_COLORS = [
@@ -52,7 +53,10 @@ export default async function GaleriaPage({
   const isAdmin = ROLES[role].group === 'admin'
 
   const { tab } = await searchParams
-  const activeTab = tab === 'marketing' ? 'marketing' : 'terreno'
+  const activeTab: 'terreno' | 'marketing' | 'historico' =
+    tab === 'marketing' ? 'marketing' :
+    tab === 'historico' ? 'historico' :
+    'terreno'
 
   // Counts for tab badges
   let albumCount = 0
@@ -135,21 +139,25 @@ export default async function GaleriaPage({
           <p className="text-ink-soft text-sm mt-1">
             {activeTab === 'terreno'
               ? terrenoDbConnected ? `${totalPhotos} fotos em ${albums.length} actividades` : 'Fotos das actividades de campo'
-              : marketingDbConnected ? `${marketingCount} activos de marca` : 'Logos, peças e fotos de divulgação'}
+              : activeTab === 'marketing'
+              ? marketingDbConnected ? `${marketingCount} activos de marca` : 'Logos, peças e fotos de divulgação'
+              : 'Arquivo de pastas e ficheiros do Google Drive (modo leitura)'}
           </p>
         </div>
-        <Link
-          href={activeTab === 'terreno' ? '/galeria/upload' : '/galeria/marketing/upload'}
-          className={cn(
-            'flex items-center gap-2 px-5 py-2.5 font-bold text-sm rounded-full hover:-translate-y-0.5 transition-all flex-shrink-0',
-            activeTab === 'terreno'
-              ? 'bg-gold text-forest shadow-gold'
-              : 'bg-[#461882] text-white shadow-[0_4px_14px_rgba(70,24,130,0.35)]'
-          )}
-        >
-          <Upload size={15} />
-          {activeTab === 'terreno' ? 'Carregar Fotos' : 'Carregar Activo'}
-        </Link>
+        {activeTab !== 'historico' && (
+          <Link
+            href={activeTab === 'terreno' ? '/galeria/upload' : '/galeria/marketing/upload'}
+            className={cn(
+              'flex items-center gap-2 px-5 py-2.5 font-bold text-sm rounded-full hover:-translate-y-0.5 transition-all flex-shrink-0',
+              activeTab === 'terreno'
+                ? 'bg-gold text-forest shadow-gold'
+                : 'bg-[#461882] text-white shadow-[0_4px_14px_rgba(70,24,130,0.35)]'
+            )}
+          >
+            <Upload size={15} />
+            {activeTab === 'terreno' ? 'Carregar Fotos' : 'Carregar Activo'}
+          </Link>
+        )}
       </div>
 
       {/* Tabs */}
@@ -185,6 +193,17 @@ export default async function GaleriaPage({
               {marketingCount}
             </span>
           )}
+        </Link>
+        <Link
+          href="/galeria?tab=historico"
+          className={cn(
+            'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors',
+            activeTab === 'historico'
+              ? 'border-amber-600 text-amber-700'
+              : 'border-transparent text-ink-soft hover:text-ink'
+          )}
+        >
+          <FolderOpen size={14} /> Histórico Drive
         </Link>
       </div>
 
@@ -269,6 +288,11 @@ export default async function GaleriaPage({
           assets={marketingAssets}
           dbConnected={marketingDbConnected}
         />
+      )}
+
+      {/* ── Tab: Histórico Drive (lê directamente do Drive, sem DB) ── */}
+      {activeTab === 'historico' && (
+        <DriveBrowser />
       )}
     </div>
   )

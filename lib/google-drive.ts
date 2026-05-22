@@ -142,6 +142,99 @@ export async function createShareLink(driveFileId: string): Promise<string> {
   return file.data.webViewLink ?? ''
 }
 
+export interface DriveBrowseItem {
+  id: string
+  name: string
+  mimeType: string
+  modifiedTime: string
+  size?: number
+}
+
+export interface DriveBrowseResult {
+  folder: { id: string; name: string }
+  parents: { id: string; name: string }[]
+  folders: DriveBrowseItem[]
+  files: DriveBrowseItem[]
+}
+
+/**
+ * Lista o conteúdo de uma pasta do Drive (uma só profundidade).
+ * Usado pelo "Histórico Drive" para ver pastas/ficheiros que não passaram pelo portal.
+ * Devolve subpastas + ficheiros + breadcrumb de parents.
+ */
+export async function listDriveFolderContents(folderId: string): Promise<DriveBrowseResult | null> {
+  if (!isDriveReady) {
+    console.log(`[Drive Mock] Listaria pasta ${folderId}`)
+    return null
+  }
+  try {
+    const drive = await getDriveClient()
+
+    // Metadata da pasta actual (nome + parents para breadcrumb)
+    const meta = await drive.files.get({
+      fileId: folderId,
+      fields: 'id, name, parents',
+    })
+
+    // Conteúdos: subpastas + ficheiros (não-pastas), ordenados por nome
+    const list = await drive.files.list({
+      q: `'${folderId}' in parents and trashed = false`,
+      fields: 'files(id, name, mimeType, modifiedTime, size)',
+      orderBy: 'folder, name',
+      pageSize: 200,
+    })
+
+    const items = list.data.files || []
+    const folders: DriveBrowseItem[] = []
+    const files: DriveBrowseItem[] = []
+    for (const f of items) {
+      const item: DriveBrowseItem = {
+        id: f.id!,
+        name: f.name || '(sem nome)',
+        mimeType: f.mimeType || 'application/octet-stream',
+        modifiedTime: f.modifiedTime || '',
+        size: f.size ? parseInt(f.size, 10) : undefined,
+      }
+      if (item.mimeType === 'application/vnd.google-apps.folder') folders.push(item)
+      else files.push(item)
+    }
+
+    // Breadcrumb: sobe até à pasta root configurada
+    const parents: { id: string; name: string }[] = []
+    const rootFolders = new Set([
+      process.env.DRIVE_FOLDER_COMUNICACAO,
+      process.env.DRIVE_FOLDER_MARKETING,
+      process.env.DRIVE_FOLDER_FINANCEIRO,
+      process.env.DRIVE_FOLDER_ESTRATEGIA,
+      process.env.DRIVE_FOLDER_PROCEDIMENTOS,
+    ].filter(Boolean))
+
+    let currentParents = meta.data.parents
+    let safety = 8
+    while (currentParents && currentParents.length > 0 && safety-- > 0) {
+      const parentId = currentParents[0]
+      if (rootFolders.has(parentId)) break
+      try {
+        const pm = await drive.files.get({ fileId: parentId, fields: 'id, name, parents' })
+        parents.unshift({ id: pm.data.id!, name: pm.data.name || '' })
+        currentParents = pm.data.parents
+      } catch {
+        break
+      }
+    }
+
+    return {
+      folder: { id: meta.data.id!, name: meta.data.name || '(sem nome)' },
+      parents,
+      folders,
+      files,
+    }
+  } catch (err) {
+    console.error('[Drive] List error:', (err as Error).message)
+    return null
+  }
+}
+
 /** Apaga um ficheiro do Drive. Não rebenta se for mock-id, se Drive não estiver configurado, ou se já não existir (404). */
 export async function deleteFileFromDrive(driveFileId: string): Promise<{ ok: boolean; error?: string }> {
   if (!driveFileId || driveFileId.startsWith('mock-')) return { ok: true }
