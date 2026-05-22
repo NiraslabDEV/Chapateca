@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/password'
 import Image from 'next/image'
 import RoleBadge from '@/components/ui/role-badge'
-import { Lock } from 'lucide-react'
+import { Lock, BookOpen } from 'lucide-react'
 
 async function loginAction(formData: FormData) {
   'use server'
@@ -157,6 +157,22 @@ export default async function LoginPage({
               Entrar no Portal →
             </button>
           </form>
+        </div>
+
+        {/* Acesso discreto ao manual — quase invisível, fica nítido em hover */}
+        <div className="flex justify-center mt-6">
+          <a
+            href="/manual.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Manual do Portal"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono
+                       text-white/25 hover:text-white/80 hover:bg-white/5
+                       transition-all duration-300 select-none"
+          >
+            <BookOpen size={11} />
+            <span className="tracking-wider uppercase">Manual</span>
+          </a>
         </div>
       </div>
     </div>
