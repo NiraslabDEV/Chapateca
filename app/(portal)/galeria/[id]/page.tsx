@@ -159,6 +159,8 @@ export default async function AlbumPage({
         {files.map((file, idx) => {
           const isReal = file.googleDriveId && !file.googleDriveId.startsWith('mock-')
           const proxyUrl = isReal ? `/api/drive/image/${file.googleDriveId}` : null
+          // Thumb optimizado a 600px (cobre retina até ~300px display); download usa URL sem ?w
+          const thumbUrl  = proxyUrl ? `${proxyUrl}?w=600` : null
           const isImage = file.mimeType.startsWith('image/')
 
           return (
@@ -168,13 +170,14 @@ export default async function AlbumPage({
                             transition-all bg-white">
               {/* Thumbnail */}
               <div className="aspect-square w-full relative overflow-hidden">
-                {proxyUrl && isImage ? (
+                {thumbUrl && isImage ? (
                   <Image
-                    src={proxyUrl}
+                    src={thumbUrl}
                     alt={file.fileName}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    loading="lazy"
                     unoptimized
                   />
                 ) : (

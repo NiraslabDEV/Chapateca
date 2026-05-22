@@ -32,8 +32,9 @@ function AssetThumb({ asset, idx }: { asset: MarketingAsset; idx: number }) {
     <div className="relative group rounded-xl overflow-hidden aspect-square cursor-pointer">
       {showImg ? (
         <img
-          src={`/api/drive/image/${asset.driveId}`}
+          src={`/api/drive/image/${asset.driveId}?w=400`}
           alt={asset.title}
+          loading="lazy"
           className="w-full h-full object-cover"
           onError={() => setImgFailed(true)}
         />

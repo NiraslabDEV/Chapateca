@@ -119,7 +119,7 @@ export default async function PublicAlbumPage({
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={`/api/photo/${token}/${photo.googleDriveId}`}
+                      src={`/api/photo/${token}/${photo.googleDriveId}?w=600`}
                       alt={photo.fileName}
                       className="w-full h-full object-cover"
                       loading="lazy"
