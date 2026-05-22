@@ -1133,7 +1133,7 @@
         <div class="feature-list">
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
-            <div class="feature-text"><strong>Criar tarefa</strong> — admins preenchem: Para (dropdown), Tarefa/Mensagem (obrigatório), Detalhe (opcional)</div>
+            <div class="feature-text"><strong>Criar tarefa</strong> — admins preenchem: Para (dropdown), Tarefa/Mensagem (obrigatório), Detalhe (opcional). Compose <strong>colapsado por defeito</strong> — botão "+ Nova Tarefa" abre o formulário.</div>
           </div>
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
@@ -1145,7 +1145,23 @@
           </div>
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Auto-marcar como recebida</strong> ao abrir <code>/tarefas</code> — qualquer tarefa em <code>pending</code> passa imediatamente a <code>received</code>, garantindo que o remetente sabe que foi vista.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Inbox organizada em duas secções:</strong> 🟣 <em>Em Progresso</em> (prominente) e ✅ <em>Concluídas</em> (colapsável, com opacidade 60% para arrumar o ecrã)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Sino no Topbar com badge clicável</strong> — visível em qualquer página, mostra número de pendentes (até 9+) e leva directo a <code>/tarefas</code></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
             <div class="feature-text"><strong>Badge na sidebar</strong> — número de tarefas não lidas aparece ao lado de "Tarefas" na barra lateral</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Empty state alegre</strong> — quando inbox está vazia ou tudo concluído mostra "🌱 Tudo em dia"</div>
           </div>
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
@@ -1603,6 +1619,78 @@
             </div>
           </div>
         </div>
+
+        <div class="divider"></div>
+
+        <!-- ── MELHORIAS DEDICADAS AO MÓDULO TAREFAS ── -->
+        <p class="subsection-title" style="margin-top:1.2rem">Melhorias do Módulo Tarefas (planeadas)</p>
+        <p style="color:#555;font-size:0.92em;margin-bottom:1rem">O <em>MVP de UX</em> já foi implementado (auto-marcar como recebida, secção de Concluídas colapsável, badge clicável no topbar, compose colapsado). As funcionalidades abaixo vão expandir o módulo nos próximos sprints.</p>
+
+        <div class="two-col">
+          <div>
+            <p class="subsection-title" style="font-size:0.85em">Produtividade</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Prazo (data de vencimento)</strong> opcional por tarefa, com indicação "vence em X dias" / "atrasada"</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Nível de prioridade</strong> — baixa / normal / urgente com chip colorido</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Respostas / comentários</strong> dentro da tarefa — fio de conversa entre remetente e destinatário</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Anexar ficheiro do portal</strong> — vincular um documento da Galeria, Manuais ou Financeiro</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Atribuir a múltiplas pessoas</strong> — mandar a mesma tarefa a 2-3 destinatários em simultâneo</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="subsection-title" style="font-size:0.85em">Descoberta e Notificações</p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Filtros avançados</strong> — por status, remetente, prazo, prioridade</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Pesquisa por texto</strong> no título e corpo da tarefa</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Atalhos de teclado</strong> — <code>N</code> (nova), <code>E</code> (concluir), <code>J</code>/<code>K</code> (navegar)</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Email automático</strong> ao destinatário quando recebe uma tarefa (já preparado em infra)</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Notificar remetente</strong> quando o destinatário marca como concluída</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Toast de confirmação</strong> ao marcar como concluído — feedback visual imediato</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Vencidas em vermelho</strong> com ícone de alerta quando passam do prazo</div>
+              </div>
+              <div class="feature-item">
+                <div class="feature-check check-partial">~</div>
+                <div class="feature-text"><strong>Templates de tarefas frequentes</strong> — "Relatório semanal", "Visita de campo" carregam-se em 1 clique</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 

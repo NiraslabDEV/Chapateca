@@ -4,7 +4,7 @@ import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
 import { markTaskDone } from './actions'
 import ComposePanel from '@/components/tarefas/compose-panel'
-import { CheckCircle2, Clock, RotateCcw, MessageSquare, Send } from 'lucide-react'
+import { CheckCircle2, Clock, RotateCcw, MessageSquare, Send, CheckCheck } from 'lucide-react'
 
 type TaskStatus = 'pending' | 'received' | 'done'
 
@@ -102,6 +102,13 @@ export default async function TarefasPage() {
   let sent:  Awaited<ReturnType<typeof prisma.task.findMany>> = []
 
   try {
+    // Auto-marcar todas as tarefas pendentes como recebidas — o utilizador acabou de abrir
+    // a página, portanto já "recebeu" tudo. O badge no topbar actualiza na próxima navegação.
+    await prisma.task.updateMany({
+      where: { toEmail: r.email, status: 'pending' },
+      data:  { status: 'received', readAt: new Date() },
+    })
+
     inbox = await prisma.task.findMany({
       where:   { toEmail: r.email },
       orderBy: { createdAt: 'desc' },
@@ -114,19 +121,20 @@ export default async function TarefasPage() {
     }
   } catch { /* DB não disponível */ }
 
-  const pendingCount = inbox.filter(t => t.status === 'pending').length
-  const receivedCount = inbox.filter(t => t.status === 'received').length
+  // Após auto-mark, "pending" no inbox deverá ser vazio. Mantemos por defesa.
+  const inProgress = inbox.filter(t => t.status === 'pending' || t.status === 'received')
+  const concluded  = inbox.filter(t => t.status === 'done')
 
   return (
     <div>
       <div className="mb-8">
         <h1 className="font-display text-[34px] text-ink leading-tight">Tarefas e Mensagens</h1>
         <p className="text-ink-soft text-sm mt-1">
-          {pendingCount > 0
-            ? `${pendingCount} não lida${pendingCount !== 1 ? 's' : ''} · ${receivedCount} em progresso`
-            : receivedCount > 0
-            ? `${receivedCount} em progresso`
-            : 'Tudo em dia'}
+          {inProgress.length === 0 && concluded.length === 0
+            ? '🌱 Tudo em dia — caixa vazia'
+            : inProgress.length === 0
+            ? `🌱 Tudo em dia · ${concluded.length} concluída${concluded.length !== 1 ? 's' : ''}`
+            : `${inProgress.length} em progresso${concluded.length > 0 ? ` · ${concluded.length} concluída${concluded.length !== 1 ? 's' : ''}` : ''}`}
         </p>
       </div>
 
@@ -137,31 +145,53 @@ export default async function TarefasPage() {
 
           {isAdmin && <ComposePanel recipients={recipients} />}
 
-          {/* Caixa de entrada */}
-          <section>
+          {/* Em Progresso */}
+          <section className="mb-8">
             <div className="flex items-center gap-2 mb-3">
-              <MessageSquare size={15} className="text-forest" />
-              <h2 className="text-sm font-semibold text-ink">Caixa de Entrada</h2>
-              {pendingCount > 0 && (
+              <MessageSquare size={15} className="text-[#461882]" />
+              <h2 className="text-sm font-semibold text-ink">Em Progresso</h2>
+              {inProgress.length > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-[#461882] text-white text-[10px] font-bold font-mono">
-                  {pendingCount}
+                  {inProgress.length}
                 </span>
               )}
             </div>
 
-            {inbox.length === 0 ? (
+            {inProgress.length === 0 ? (
               <div className="bg-white border border-sand-light rounded-2xl p-8 text-center">
                 <Clock size={32} className="text-sand mx-auto mb-3" />
-                <p className="text-sm text-ink-soft">Nenhuma tarefa recebida ainda</p>
+                <p className="text-sm text-ink-soft">
+                  {inbox.length === 0 ? 'Nenhuma tarefa recebida ainda' : '🌱 Nada pendente — boa!'}
+                </p>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {inbox.map(task => (
+                {inProgress.map(task => (
                   <TaskCard key={task.id} task={task} perspective="inbox" />
                 ))}
               </div>
             )}
           </section>
+
+          {/* Concluídas — colapsável via <details>, opacidade 60% */}
+          {concluded.length > 0 && (
+            <details className="group">
+              <summary className="flex items-center gap-2 mb-3 cursor-pointer list-none select-none hover:opacity-80 transition-opacity">
+                <CheckCheck size={15} className="text-green-700" />
+                <h2 className="text-sm font-semibold text-ink-mid">Concluídas</h2>
+                <span className="px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold font-mono">
+                  {concluded.length}
+                </span>
+                <span className="text-[11px] text-ink-soft font-mono group-open:hidden">▾ mostrar</span>
+                <span className="text-[11px] text-ink-soft font-mono hidden group-open:inline">▴ ocultar</span>
+              </summary>
+              <div className="flex flex-col gap-3 opacity-60 hover:opacity-90 transition-opacity">
+                {concluded.map(task => (
+                  <TaskCard key={task.id} task={task} perspective="inbox" />
+                ))}
+              </div>
+            </details>
+          )}
         </div>
 
         {/* Coluna lateral: enviadas (admins) */}

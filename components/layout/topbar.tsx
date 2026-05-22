@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { Bell, Menu } from 'lucide-react'
 import RoleBadge from '@/components/ui/role-badge'
 import { ROLES, type RoleKey } from '@/lib/roles'
@@ -8,10 +9,11 @@ import { ROLES, type RoleKey } from '@/lib/roles'
 interface TopbarProps {
   role: RoleKey
   crumbs?: string[]
+  unreadCount?: number
   onMenuClick?: () => void
 }
 
-export default function Topbar({ role, crumbs = [], onMenuClick }: TopbarProps) {
+export default function Topbar({ role, crumbs = [], unreadCount = 0, onMenuClick }: TopbarProps) {
   const r = ROLES[role]
   return (
     <header className="h-16 bg-forest border-b border-forest-mid flex items-center px-4 md:px-6 gap-3 md:gap-6 sticky top-0 z-50">
@@ -48,13 +50,19 @@ export default function Topbar({ role, crumbs = [], onMenuClick }: TopbarProps) 
       )}
 
       <div className="ml-auto flex items-center gap-3">
-        {/* Notificações */}
-        <button className="relative w-9 h-9 rounded-full flex items-center justify-center text-white/80 hover:bg-white/10 transition-colors">
+        {/* Notificações — sino com badge de tarefas pendentes */}
+        <Link
+          href="/tarefas"
+          aria-label={unreadCount > 0 ? `${unreadCount} tarefa${unreadCount !== 1 ? 's' : ''} por ver` : 'Tarefas'}
+          className="relative w-9 h-9 rounded-full flex items-center justify-center text-white/80 hover:bg-white/10 transition-colors"
+        >
           <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-gold rounded-full text-[9px] font-bold text-white flex items-center justify-center border-2 border-forest">
-            3
-          </span>
-        </button>
+          {unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-gold rounded-full text-[9px] font-bold text-white flex items-center justify-center border-2 border-forest">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </Link>
 
         {/* Avatar pill */}
         <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 cursor-pointer hover:bg-white/15 transition-colors">
