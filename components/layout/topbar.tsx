@@ -25,16 +25,25 @@ export default function Topbar({ role, crumbs = [], unreadCount = 0, onMenuClick
         <Menu size={20} />
       </button>
 
-      {/* Logo */}
-      <div className="flex items-center flex-shrink-0">
+      {/* Logo — ícone circular + wordmark */}
+      <Link href="/dashboard" className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-90 transition-opacity">
+        <div className="w-9 h-9 rounded-full overflow-hidden ring-1 ring-white/20 flex-shrink-0">
+          <Image
+            src="/logo-chapateca-icone.png"
+            alt="Chapateca"
+            width={36}
+            height={36}
+            className="w-full h-full object-cover"
+          />
+        </div>
         <Image
           src="/logo-chapateca.svg"
           alt="Chapateca"
-          width={120}
-          height={40}
-          className="object-contain brightness-0 invert"
+          width={110}
+          height={36}
+          className="object-contain brightness-0 invert hidden sm:block"
         />
-      </div>
+      </Link>
 
       {/* Breadcrumb — oculto em mobile */}
       {crumbs.length > 0 && (

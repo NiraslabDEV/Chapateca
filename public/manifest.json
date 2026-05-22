@@ -1,0 +1,19 @@
+{
+  "name": "Portal Chapateca",
+  "short_name": "Chapateca",
+  "description": "Portal administrativo interno da Chapateca — bibliotecas comunitárias em Maputo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1A0836",
+  "theme_color": "#461882",
+  "orientation": "portrait-primary",
+  "lang": "pt-MZ",
+  "icons": [
+    {
+      "src": "/logo-chapateca-icone.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

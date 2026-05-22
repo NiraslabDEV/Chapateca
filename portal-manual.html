@@ -57,11 +57,14 @@
       margin-bottom: 20px;
     }
     .hero-logo-dot {
-      width: 32px; height: 32px;
-      background: var(--orange);
-      border-radius: 8px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
       display: flex; align-items: center; justify-content: center;
     }
+    .hero-logo-dot img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .hero-logo-dot span { color: white; font-weight: 900; font-size: 16px; }
     .hero-logo-text { color: white; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
     .hero h1 {
@@ -416,7 +419,7 @@
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-logo">
-      <div class="hero-logo-dot"><span>C</span></div>
+      <div class="hero-logo-dot"><img src="/logo-chapateca-icone.png" alt="Chapateca" /></div>
       <span class="hero-logo-text">CHAPATECA</span>
     </div>
     <h1>Portal Interno — Manual Completo</h1>

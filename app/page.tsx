@@ -70,7 +70,17 @@ export default async function LoginPage({
 
       <div className="w-full max-w-[460px] animate-card-in relative z-10">
         <div className="flex flex-col items-center gap-3 mb-8">
-          <Image src="/logo-chapateca.svg" alt="Chapateca" width={160} height={54} className="object-contain brightness-0 invert" />
+          {/* Ícone circular Chapateca — carrinha + livros */}
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-white/5 ring-2 ring-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+            <Image
+              src="/logo-chapateca-icone.png"
+              alt="Chapateca"
+              width={80}
+              height={80}
+              className="w-full h-full object-cover"
+              priority
+            />
+          </div>
           <p className="text-sm text-white/50 font-mono tracking-wide">Portal Interno · Maputo</p>
         </div>
 

@@ -8,7 +8,9 @@ export default function EsqueciSenhaPage() {
          style={{ background: 'linear-gradient(135deg, #1A0836 0%, #461882 60%, #6B2D10 100%)' }}>
       <div className="w-full max-w-sm animate-card-in">
         <div className="flex justify-center mb-6">
-          <Image src="/logo-chapateca.svg" alt="Chapateca" width={130} height={44} className="brightness-0 invert" />
+          <div className="w-16 h-16 rounded-full overflow-hidden bg-white/5 ring-2 ring-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
+            <Image src="/logo-chapateca-icone.png" alt="Chapateca" width={64} height={64} className="w-full h-full object-cover" />
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl p-8 shadow-[0_32px_80px_rgba(0,0,0,0.5)]">

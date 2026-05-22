@@ -21,8 +21,27 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Chapateca · Portal Interno',
-  description: 'Portal administrativo interno da Chapateca',
+  title: {
+    default: 'Chapateca · Portal Interno',
+    template: '%s · Chapateca',
+  },
+  description: 'Portal administrativo interno da Chapateca — bibliotecas comunitárias em Maputo',
+  applicationName: 'Portal Chapateca',
+  authors: [{ name: 'LeapFrog — Saltos Tecnológicos' }],
+  themeColor: '#461882',
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/logo-chapateca-icone.png',
+    apple: '/logo-chapateca-icone.png',
+    shortcut: '/logo-chapateca-icone.png',
+  },
+  openGraph: {
+    title: 'Chapateca · Portal Interno',
+    description: 'Portal administrativo interno da Chapateca',
+    images: ['/logo-chapateca-icone.png'],
+    locale: 'pt_MZ',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
