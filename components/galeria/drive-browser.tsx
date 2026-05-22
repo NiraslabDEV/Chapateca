@@ -18,8 +18,8 @@ interface BrowseResult {
   files: DriveItem[]
 }
 
-const ROOT_ID = 'root:COMUNICACAO'
-const ROOT_NAME = 'Comunicação e Terreno'
+const ROOT_ID = 'root:CHAPATECA'
+const ROOT_NAME = 'CHAPATECA-PORTAL'
 
 function formatBytes(n?: number) {
   if (!n) return ''
@@ -76,7 +76,7 @@ export default function DriveBrowser() {
       <div className="mb-5 p-3.5 border border-amber-200 bg-amber-50 rounded-xl flex items-start gap-2.5">
         <AlertCircle size={16} className="text-amber-700 flex-shrink-0 mt-0.5" />
         <div className="text-[12.5px] text-amber-900 leading-relaxed">
-          <strong>Modo de leitura.</strong> Mostra pastas e ficheiros directamente do Google Drive — incluindo material antigo que ainda não passou pelo portal. Para novos uploads, usa sempre <em>Carregar Fotos</em> para que fiquem registados.
+          <strong>Modo de leitura — Drive completo.</strong> Mostra <em>todas</em> as pastas e ficheiros que estão no Drive da Chapateca, incluindo material histórico ou pastas criadas directamente (ex: <code>05. Fotos de Terreno</code>, <code>06. EVENTOS</code>, <code>10. Coco PRO</code>). Para novos uploads continua a usar <em>Carregar Fotos</em> para que fiquem registados na base de dados.
         </div>
       </div>
 

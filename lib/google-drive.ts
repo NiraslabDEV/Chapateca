@@ -142,6 +142,47 @@ export async function createShareLink(driveFileId: string): Promise<string> {
   return file.data.webViewLink ?? ''
 }
 
+// Cache em memória da pasta-mãe CHAPATECA-PORTAL — descoberta uma vez por processo
+let chapatecaRootCache: string | undefined
+
+/**
+ * Devolve o ID da pasta-mãe que contém todas as pastas Chapateca (CHAPATECA-PORTAL).
+ * Tenta primeiro a env var explícita DRIVE_FOLDER_ROOT. Se não existir, descobre
+ * automaticamente pegando no parent de uma das pastas já conhecidas (COMUNICACAO/FINANCEIRO/etc).
+ */
+export async function getChapatecaRootId(): Promise<string | undefined> {
+  if (chapatecaRootCache) return chapatecaRootCache
+
+  if (process.env.DRIVE_FOLDER_ROOT) {
+    chapatecaRootCache = process.env.DRIVE_FOLDER_ROOT
+    return chapatecaRootCache
+  }
+
+  if (!isDriveReady) return undefined
+
+  const knownChild =
+    process.env.DRIVE_FOLDER_COMUNICACAO ||
+    process.env.DRIVE_FOLDER_FINANCEIRO ||
+    process.env.DRIVE_FOLDER_ESTRATEGIA ||
+    process.env.DRIVE_FOLDER_PROCEDIMENTOS
+
+  if (!knownChild) return undefined
+
+  try {
+    const drive = await getDriveClient()
+    const meta = await drive.files.get({ fileId: knownChild, fields: 'parents' })
+    const parent = meta.data.parents?.[0]
+    if (parent) {
+      chapatecaRootCache = parent
+      console.log(`[Drive] Root Chapateca descoberta: ${parent}`)
+      return parent
+    }
+  } catch (err) {
+    console.error('[Drive] getChapatecaRootId falhou:', (err as Error).message)
+  }
+  return undefined
+}
+
 export interface DriveBrowseItem {
   id: string
   name: string
@@ -199,9 +240,11 @@ export async function listDriveFolderContents(folderId: string): Promise<DriveBr
       else files.push(item)
     }
 
-    // Breadcrumb: sobe até à pasta root configurada
+    // Breadcrumb: sobe até à pasta root configurada (Chapateca raiz ou subpasta-known)
     const parents: { id: string; name: string }[] = []
+    const chapatecaRoot = await getChapatecaRootId()
     const rootFolders = new Set([
+      chapatecaRoot,
       process.env.DRIVE_FOLDER_COMUNICACAO,
       process.env.DRIVE_FOLDER_MARKETING,
       process.env.DRIVE_FOLDER_FINANCEIRO,
