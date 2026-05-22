@@ -68,6 +68,7 @@ export default async function DashboardPage() {
     uploaderInitials: string
     description: string
     date: Date
+    kind?: 'upload' | 'delete'
   }
 
   let albumsThisMonth = 0
@@ -82,7 +83,7 @@ export default async function DashboardPage() {
   }
 
   try {
-    const [aCount, pCount, tCount, albums, fileLogs, locs] = await Promise.all([
+    const [aCount, pCount, tCount, albums, fileLogs, locs, activityLogs] = await Promise.all([
       prisma.album.count({ where: { createdAt: { gte: startOfMonth } } }),
       prisma.fileLog.count({ where: { createdAt: { gte: startOfMonth } } }),
       prisma.task.count({ where: { status: 'pending' } }),
@@ -103,6 +104,10 @@ export default async function DashboardPage() {
         _count: { id: true },
         orderBy: { _count: { id: 'desc' } },
         take: 4,
+      }),
+      prisma.activityLog.findMany({
+        take: 8,
+        orderBy: { createdAt: 'desc' },
       }),
     ])
 
@@ -133,12 +138,23 @@ export default async function DashboardPage() {
         uploaderInitials: initials(name),
         description: `carregou 1 foto${f.location ? ` em ${f.location}` : ''}`,
         date: f.createdAt,
+        kind: 'upload',
       }
     })
 
-    feedItems = [...albumItems, ...logItems]
+    const deleteItems: FeedItem[] = activityLogs.map(a => ({
+      id: `del-${a.id}`,
+      href: a.action.startsWith('marketing') ? '/galeria?tab=marketing' : '/galeria',
+      uploaderName: a.actorName,
+      uploaderInitials: initials(a.actorName),
+      description: a.description,
+      date: a.createdAt,
+      kind: 'delete',
+    }))
+
+    feedItems = [...albumItems, ...logItems, ...deleteItems]
       .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .slice(0, 6)
+      .slice(0, 8)
 
     topLocations = locs
       .filter(l => l.location)
@@ -230,21 +246,27 @@ export default async function DashboardPage() {
 
         {feedItems.length > 0 ? (
           <div className="flex flex-col gap-0.5">
-            {feedItems.map(item => (
-              <a key={item.id} href={item.href}
-                 className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-parchment-2 transition-colors">
-                <div className="w-7 h-7 rounded-full bg-gold/20 flex items-center justify-center text-[10px] font-bold text-gold flex-shrink-0">
-                  {item.uploaderInitials}
-                </div>
-                <div className="text-[13px] text-ink-mid flex-1 min-w-0">
-                  <strong className="text-ink">{item.uploaderName}</strong>{' '}
-                  {item.description}
-                </div>
-                <span className="text-[11px] text-ink-soft font-mono flex-shrink-0">
-                  {item.date.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' })}
-                </span>
-              </a>
-            ))}
+            {feedItems.map(item => {
+              const isDelete = item.kind === 'delete'
+              return (
+                <a key={item.id} href={item.href}
+                   className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-parchment-2 transition-colors">
+                  <div className={cn(
+                    'w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0',
+                    isDelete ? 'bg-red-100 text-red-600' : 'bg-gold/20 text-gold'
+                  )}>
+                    {item.uploaderInitials}
+                  </div>
+                  <div className="text-[13px] text-ink-mid flex-1 min-w-0">
+                    <strong className="text-ink">{item.uploaderName}</strong>{' '}
+                    {item.description}
+                  </div>
+                  <span className="text-[11px] text-ink-soft font-mono flex-shrink-0">
+                    {item.date.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short' })}
+                  </span>
+                </a>
+              )
+            })}
           </div>
         ) : dbConnected ? (
           <div className="px-4 py-8 text-center text-sm text-ink-soft">

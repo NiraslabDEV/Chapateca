@@ -141,3 +141,22 @@ export async function createShareLink(driveFileId: string): Promise<string> {
   const file = await drive.files.get({ fileId: driveFileId, fields: 'webViewLink' })
   return file.data.webViewLink ?? ''
 }
+
+/** Apaga um ficheiro do Drive. Não rebenta se for mock-id, se Drive não estiver configurado, ou se já não existir (404). */
+export async function deleteFileFromDrive(driveFileId: string): Promise<{ ok: boolean; error?: string }> {
+  if (!driveFileId || driveFileId.startsWith('mock-')) return { ok: true }
+  if (!isDriveReady) {
+    console.log(`[Drive Mock] Apagaria: ${driveFileId}`)
+    return { ok: true }
+  }
+  try {
+    const drive = await getDriveClient()
+    await drive.files.delete({ fileId: driveFileId })
+    return { ok: true }
+  } catch (err) {
+    const e = err as { code?: number; message?: string }
+    if (e.code === 404) return { ok: true }
+    console.error('[Drive] Delete error:', e.code, e.message)
+    return { ok: false, error: e.message }
+  }
+}

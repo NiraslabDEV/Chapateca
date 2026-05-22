@@ -3,10 +3,11 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
-import { getRoleFromCookie } from '@/lib/roles'
+import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { ArrowLeft, MapPin, Calendar, Download, ClipboardList } from 'lucide-react'
 import { ACTIVITY_TYPES } from '@/lib/activity-types'
 import AlbumActions from '@/components/galeria/album-actions'
+import DeletePhotoButton from '@/components/galeria/delete-photo-button'
 
 const THUMB_COLORS = [
   'linear-gradient(135deg, #6b8e5a, #8aae72)',
@@ -35,6 +36,7 @@ export default async function AlbumPage({
   const store = await cookies()
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) redirect('/')
+  const isAdmin = ROLES[role].group === 'admin'
 
   const { id } = await params
   const isMock = /^\d+$/.test(id)
@@ -151,7 +153,7 @@ export default async function AlbumPage({
             <span>{files.length} foto{files.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
-        {!isMock && <AlbumActions albumId={id} />}
+        {!isMock && <AlbumActions albumId={id} canDelete={isAdmin} onDeleteRedirect="/galeria" />}
       </div>
 
       {/* Grid */}
@@ -189,16 +191,19 @@ export default async function AlbumPage({
                   </div>
                 )}
 
-                {/* Download overlay on hover (fotos reais) */}
+                {/* Overlay on hover (fotos reais): Guardar + (admin) Apagar */}
                 {proxyUrl && (
-                  <a href={proxyUrl} download={file.fileName}
-                     className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity
-                                flex items-center justify-center">
-                    <span className="flex items-center gap-1.5 px-4 py-2 bg-white/90 rounded-full
-                                     text-[12px] font-semibold text-ink hover:bg-white transition-colors">
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity
+                                  flex items-center justify-center gap-2 p-2">
+                    <a href={proxyUrl} download={file.fileName}
+                       className="flex items-center gap-1.5 px-3 py-2 bg-white/90 rounded-full
+                                  text-[12px] font-semibold text-ink hover:bg-white transition-colors">
                       <Download size={13} /> Guardar
-                    </span>
-                  </a>
+                    </a>
+                    {isAdmin && !file.id.startsWith('mock-') && (
+                      <DeletePhotoButton fileId={file.id} fileName={file.fileName} />
+                    )}
+                  </div>
                 )}
               </div>
 

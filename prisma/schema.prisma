@@ -55,6 +55,18 @@ model Task {
   createdAt DateTime  @default(now())
 }
 
+// Audit log de acções importantes (deleções, etc.) — alimenta o feed do Dashboard.
+model ActivityLog {
+  id          String   @id @default(cuid())
+  actorEmail  String
+  actorName   String
+  action      String   // 'album.delete' | 'photo.delete' | 'marketing.delete' | ...
+  description String   // texto pronto para exibir: "apagou álbum Polana Caniço B (3 fotos)"
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model Album {
   id           String    @id @default(cuid())
   activityName String?

@@ -542,6 +542,10 @@
           </div>
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Apagar ficheiros é sempre pelo Portal</strong> — a Direcção tem botão 🗑️ em cada álbum e em cada foto. Apagar manualmente no Drive deixa "fantasmas" no portal (registos que apontam para nada). O Portal apaga DB + Drive em conjunto e regista a acção no feed do Dashboard.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
             <div class="feature-text"><strong>Erros silenciosos foram corrigidos:</strong> a rota <code>/api/upload</code> regista agora em <code>console.error</code> qualquer falha de Album, FileLog, Drive ou utilizador — visível nos logs do Railway. Antes, alguns uploads ficavam órfãos sem aviso.</div>
           </div>
         </div>
@@ -917,6 +921,14 @@
           <div class="feature-item">
             <div class="feature-check check-done">✓</div>
             <div class="feature-text"><strong>Botão Partilhar</strong> no header do álbum para gerar link de doador directamente</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Apagar álbum completo</strong> (Direcção apenas) — botão 🗑️ vermelho na listagem e no detalhe. Modal de confirmação avisa que é irreversível. Apaga o álbum + todas as fotos (DB + Drive) e regista a acção no feed.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-check check-done">✓</div>
+            <div class="feature-text"><strong>Apagar foto individual</strong> (Direcção apenas) — botão vermelho no hover de cada thumbnail. Modal de confirmação, apaga só a foto (mantém o álbum mesmo se vazio).</div>
           </div>
         </div>
 

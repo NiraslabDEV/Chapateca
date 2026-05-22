@@ -2,7 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { getRoleFromCookie } from '@/lib/roles'
+import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { Upload, MapPin, Calendar, Image as ImageIcon } from 'lucide-react'
 import { ACTIVITY_TYPES } from '@/lib/activity-types'
 import AlbumActions from '@/components/galeria/album-actions'
@@ -49,6 +49,7 @@ export default async function GaleriaPage({
   const store = await cookies()
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) redirect('/')
+  const isAdmin = ROLES[role].group === 'admin'
 
   const { tab } = await searchParams
   const activeTab = tab === 'marketing' ? 'marketing' : 'terreno'
@@ -252,7 +253,7 @@ export default async function GaleriaPage({
                           {album.uploaderName}
                         </div>
                       </div>
-                      <AlbumActions albumId={album.id} />
+                      <AlbumActions albumId={album.id} canDelete={isAdmin} />
                     </div>
                   ))}
                 </div>
