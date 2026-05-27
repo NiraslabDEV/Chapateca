@@ -42,20 +42,22 @@ export async function GET(
   }
 
   const widthParam = req.nextUrl.searchParams.get('w')
-  const width = widthParam ? Math.min(Math.max(parseInt(widthParam, 10) || 0, 50), 2000) : 0
+  const isDownload = req.nextUrl.searchParams.get('download') === '1'
+  const width = isDownload ? 0 : (widthParam ? Math.min(Math.max(parseInt(widthParam, 10) || 0, 50), 2000) : 0)
   const cacheKey = `${driveId}|${width}`
 
   const cached = getCached(cacheKey)
   if (cached) {
-    return new NextResponse(new Uint8Array(cached.buf), {
-      status: 200,
-      headers: {
-        'Content-Type': cached.contentType,
-        'Cache-Control': 'public, max-age=2592000, immutable',
-        'Content-Length': cached.buf.length.toString(),
-        'X-Cache': 'HIT',
-      },
-    })
+    const headers: Record<string, string> = {
+      'Content-Type': cached.contentType,
+      'Cache-Control': 'public, max-age=2592000, immutable',
+      'Content-Length': cached.buf.length.toString(),
+      'X-Cache': 'HIT',
+    }
+    if (isDownload) {
+      headers['Content-Disposition'] = `attachment; filename="${driveId}"`
+    }
+    return new NextResponse(new Uint8Array(cached.buf), { status: 200, headers })
   }
 
   try {
@@ -111,15 +113,16 @@ export async function GET(
 
     setCached(cacheKey, { buf: buffer, contentType })
 
-    return new NextResponse(new Uint8Array(buffer), {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=2592000, immutable',
-        'Content-Length': buffer.length.toString(),
-        'X-Cache': 'MISS',
-      },
-    })
+    const headers: Record<string, string> = {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=2592000, immutable',
+      'Content-Length': buffer.length.toString(),
+      'X-Cache': 'MISS',
+    }
+    if (isDownload) {
+      headers['Content-Disposition'] = `attachment; filename="${driveId}"`
+    }
+    return new NextResponse(new Uint8Array(buffer), { status: 200, headers })
   } catch (err) {
     console.error('[Public Photo Proxy]', err)
     return new NextResponse('Erro', { status: 500 })

@@ -12,17 +12,27 @@ export default async function FinancasUploadPage({
   const store = await cookies()
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) redirect('/')
-  if (!ROLES[role].access.financas) redirect('/acesso-negado')
+  const r = ROLES[role]
+  let hasAccess = r.access.financas
+  try {
+    const u = await prisma.user.findUnique({ where: { email: r.email }, select: { accessFinancas: true } })
+    if (u) hasAccess = u.accessFinancas ?? r.access.financas
+  } catch { /* usa estático */ }
+  if (!hasAccess) redirect('/acesso-negado')
 
   const { folder: preselectedFolderId } = await searchParams
 
-  let folders: { id: string; name: string }[] = []
+  let folders: { id: string; name: string; depth?: number }[] = []
   try {
-    folders = await prisma.folder.findMany({
-      where: { category: 'FINANCEIRO' },
+    const raw = await prisma.folder.findMany({
+      where: { category: 'FINANCEIRO', parentId: null },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, name: true },
+      include: { children: { orderBy: { createdAt: 'asc' }, select: { id: true, name: true } } },
     })
+    for (const f of raw) {
+      folders.push({ id: f.id, name: f.name })
+      for (const c of f.children) folders.push({ id: c.id, name: c.name, depth: 1 })
+    }
   } catch { /* DB indisponível */ }
 
   return (

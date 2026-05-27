@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, Check, ArrowLeft, ArrowRight, FileText, Calendar, FolderOpen, Plus } from 'lucide-react'
+import { Upload, Check, ArrowLeft, ArrowRight, FileText, Calendar, FolderOpen, Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { DocCategory } from '@/lib/folder-actions'
 
@@ -39,7 +39,7 @@ const TYPE_COLORS: Record<string, string> = {
   DOCX: 'bg-blue-700',
 }
 
-export type FolderOption = { id: string; name: string }
+export type FolderOption = { id: string; name: string; depth?: number }
 
 interface DocUploadFormProps {
   category: DocCategory
@@ -64,26 +64,37 @@ export default function DocUploadForm({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [step, setStep] = useState(1)
-  const [file, setFile] = useState<File | null>(null)
-  const [fileTypeError, setFileTypeError] = useState('')
-  const [docTitle, setDocTitle] = useState('')
+  const [files, setFiles] = useState<File[]>([])
+  const [invalidFiles, setInvalidFiles] = useState<string[]>([])
   const [docType, setDocType] = useState('outro')
   const [folderId, setFolderId] = useState(preselectedFolderId ?? (folders[0]?.id ?? ''))
   const [newFolderName, setNewFolderName] = useState('')
   const [creatingFolder, setCreatingFolder] = useState(false)
   const [refDate, setRefDate] = useState(new Date().toISOString().slice(0, 7))
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState('')
 
-  const detectedType = file ? detectFileType(file.type) : null
-
-  const handleFile = (picked: File | null) => {
+  const handleFiles = (picked: FileList | null) => {
     if (!picked) return
-    const t = detectFileType(picked.type)
-    if (!t) { setFileTypeError('Tipo não suportado. Use PDF, XLSX ou DOCX.'); setFile(null); return }
-    setFileTypeError('')
-    setFile(picked)
-    if (!docTitle) setDocTitle(picked.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' '))
+    const valid: File[] = []
+    const invalid: string[] = []
+    Array.from(picked).forEach(f => {
+      if (detectFileType(f.type)) {
+        valid.push(f)
+      } else {
+        invalid.push(f.name)
+      }
+    })
+    setFiles(prev => {
+      const existing = new Set(prev.map(f => f.name + f.size))
+      return [...prev, ...valid.filter(f => !existing.has(f.name + f.size))]
+    })
+    setInvalidFiles(invalid)
+  }
+
+  const removeFile = (idx: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== idx))
   }
 
   const createFolderInline = async () => {
@@ -106,23 +117,28 @@ export default function DocUploadForm({
   }
 
   const handleUpload = async () => {
-    if (!file || !docTitle || !refDate) return
+    if (!files.length || !refDate) return
     setUploading(true)
     setError('')
+    setUploadProgress(0)
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      fd.append('docTitle', docTitle)
-      fd.append('docType', docType)
-      fd.append('refDate', `${refDate}-01`)
-      fd.append('category', category)
-      if (folderId) fd.append('folderId', folderId)
-      const res = await fetch('/api/upload-doc', { method: 'POST', body: fd })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(data.error ?? 'Erro ao fazer upload')
-        setUploading(false)
-        return
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('docTitle', file.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' '))
+        fd.append('docType', docType)
+        fd.append('refDate', `${refDate}-01`)
+        fd.append('category', category)
+        if (folderId) fd.append('folderId', folderId)
+        const res = await fetch('/api/upload-doc', { method: 'POST', body: fd })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          setError(`Erro em "${file.name}": ${data.error ?? 'upload falhou'}`)
+          setUploading(false)
+          return
+        }
+        setUploadProgress(i + 1)
       }
       setStep(3)
     } catch {
@@ -170,37 +186,61 @@ export default function DocUploadForm({
         {/* STEP 1 */}
         {step === 1 && (
           <div>
-            <h2 className="font-display text-[26px] text-center mb-2">Seleccionar Documento</h2>
-            <p className="text-center text-sm text-ink-soft mb-6">PDF, Excel (XLSX) ou Word (DOCX)</p>
-            <input ref={inputRef} type="file"
+            <h2 className="font-display text-[26px] text-center mb-1">Seleccionar Documentos</h2>
+            <p className="text-center text-sm text-ink-soft mb-6">PDF, Excel (XLSX) ou Word (DOCX) · múltiplos ficheiros</p>
+
+            <input ref={inputRef} type="file" multiple
                    accept=".pdf,.xlsx,.xls,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
-                   className="hidden" onChange={e => handleFile(e.target.files?.[0] ?? null)} />
-            {file ? (
-              <div className="border border-sand-light rounded-xl p-5 flex items-center gap-4 mb-4">
-                <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center text-[11px] font-bold text-white font-mono flex-shrink-0', TYPE_COLORS[detectedType ?? ''] ?? 'bg-ink-soft')}>
-                  {detectedType}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-ink truncate">{file.name}</div>
-                  <div className="text-xs text-ink-soft font-mono mt-0.5">{formatBytes(file.size)}</div>
-                </div>
-                <button onClick={() => inputRef.current?.click()} className="text-xs text-ink-soft hover:text-ink underline flex-shrink-0">Mudar</button>
+                   className="hidden" onChange={e => handleFiles(e.target.files)} />
+
+            {/* Drop zone */}
+            <button onClick={() => inputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-sand rounded-2xl py-10 text-center hover:border-ink-soft hover:bg-parchment-2 transition-all mb-4">
+              <FileText size={34} className="mx-auto mb-3 text-ink-soft" />
+              <div className="font-display text-lg text-ink mb-1">Clica para seleccionar</div>
+              <div className="text-xs text-ink-soft font-mono">PDF · XLSX · DOCX · podes seleccionar vários</div>
+            </button>
+
+            {/* File list */}
+            {files.length > 0 && (
+              <div className="flex flex-col gap-2 mb-4">
+                {files.map((file, idx) => {
+                  const type = detectFileType(file.type)
+                  return (
+                    <div key={idx} className="flex items-center gap-3 px-4 py-2.5 border border-sand-light rounded-xl bg-parchment-2">
+                      <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-bold text-white font-mono flex-shrink-0', TYPE_COLORS[type ?? ''] ?? 'bg-ink-soft')}>
+                        {type}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-ink truncate">{file.name}</div>
+                        <div className="text-xs text-ink-soft font-mono">{formatBytes(file.size)}</div>
+                      </div>
+                      <button onClick={() => removeFile(idx)} className="text-ink-soft hover:text-red-500 transition-colors flex-shrink-0">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )
+                })}
+                <button onClick={() => inputRef.current?.click()}
+                        className="text-xs font-medium py-2 border border-dashed border-sand rounded-xl hover:bg-parchment-2 transition-colors"
+                        style={{ color: accentColor }}>
+                  + Adicionar mais ficheiros
+                </button>
               </div>
-            ) : (
-              <button onClick={() => inputRef.current?.click()}
-                      className="w-full border-2 border-dashed border-sand rounded-2xl py-12 text-center hover:border-ink-soft hover:bg-parchment-2 transition-all mb-4">
-                <FileText size={38} className="mx-auto mb-3 text-ink-soft" />
-                <div className="font-display text-lg text-ink mb-1">Clica para seleccionar</div>
-                <div className="text-xs text-ink-soft font-mono">PDF · XLSX · DOCX</div>
-              </button>
             )}
-            {fileTypeError && <p className="text-sm text-red-600 text-center mb-4">{fileTypeError}</p>}
-            <div className="flex gap-3 mt-6">
+
+            {invalidFiles.length > 0 && (
+              <p className="text-sm text-red-600 text-center mb-3">
+                Ignorados (tipo inválido): {invalidFiles.join(', ')}
+              </p>
+            )}
+
+            <div className="flex gap-3 mt-4">
               <button onClick={() => router.push(backHref)} className="flex-1 py-3 border border-sand rounded-xl text-sm text-ink-mid hover:bg-parchment-2 transition-colors">Cancelar</button>
-              <button onClick={() => file && setStep(2)} disabled={!file}
+              <button onClick={() => files.length > 0 && setStep(2)} disabled={files.length === 0}
                       className="flex-[2] py-3 text-white rounded-xl text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                       style={{ background: accentColor }}>
-                Continuar <ArrowRight size={16} />
+                Continuar ({files.length}) <ArrowRight size={16} />
               </button>
             </div>
           </div>
@@ -209,7 +249,8 @@ export default function DocUploadForm({
         {/* STEP 2 */}
         {step === 2 && (
           <div>
-            <h2 className="font-display text-[26px] text-center mb-6">Detalhes do Documento</h2>
+            <h2 className="font-display text-[26px] text-center mb-1">Detalhes</h2>
+            <p className="text-center text-sm text-ink-soft mb-6">{files.length} ficheiro{files.length !== 1 ? 's' : ''} serão guardados com as mesmas definições</p>
             <div className="flex flex-col gap-5">
 
               {/* Pasta */}
@@ -222,7 +263,11 @@ export default function DocUploadForm({
                     <FolderOpen size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft" />
                     <select value={folderId} onChange={e => setFolderId(e.target.value)}
                             className="w-full pl-9 pr-4 py-2.5 border border-sand rounded-xl text-sm bg-white appearance-none focus:border-ink-soft outline-none">
-                      {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+                      {folders.map(f => (
+                        <option key={f.id} value={f.id}>
+                          {(f.depth ?? 0) > 0 ? '— ' : ''}{f.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 ) : (
@@ -237,16 +282,6 @@ export default function DocUploadForm({
                     </button>
                   </div>
                 )}
-              </div>
-
-              {/* Título */}
-              <div>
-                <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">
-                  Título <span className="text-red-500">*</span>
-                </label>
-                <input type="text" value={docTitle} onChange={e => setDocTitle(e.target.value)}
-                       placeholder="Ex: Manual do Voluntário 2025"
-                       className="w-full px-4 py-2.5 border border-sand rounded-xl text-sm focus:border-ink-soft outline-none" />
               </div>
 
               {/* Tipo */}
@@ -273,12 +308,26 @@ export default function DocUploadForm({
 
             {error && <p className="text-sm text-red-600 mt-4 text-center">{error}</p>}
 
+            {/* Upload progress */}
+            {uploading && (
+              <div className="mt-4">
+                <div className="flex justify-between text-xs text-ink-soft font-mono mb-1.5">
+                  <span>A enviar...</span>
+                  <span>{uploadProgress} / {files.length}</span>
+                </div>
+                <div className="w-full h-1.5 bg-sand rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-300"
+                       style={{ width: `${(uploadProgress / files.length) * 100}%`, background: accentColor }} />
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-3 mt-8">
               <button onClick={() => setStep(1)} className="flex-1 py-3 border border-sand rounded-xl text-sm text-ink-mid hover:bg-parchment-2 transition-colors">← Voltar</button>
-              <button onClick={handleUpload} disabled={!docTitle || !refDate || uploading || (!folderId && folders.length > 0)}
+              <button onClick={handleUpload} disabled={!refDate || uploading || (!folderId && folders.length > 0)}
                       className="flex-[2] py-3 text-white rounded-xl text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                       style={{ background: accentColor }}>
-                {uploading ? 'A enviar...' : <><Upload size={16} /> Fazer Upload</>}
+                {uploading ? `A enviar ${uploadProgress}/${files.length}...` : <><Upload size={16} /> Enviar {files.length} ficheiro{files.length !== 1 ? 's' : ''}</>}
               </button>
             </div>
           </div>
@@ -293,17 +342,23 @@ export default function DocUploadForm({
                 <polyline points="8 22 18 32 36 14" />
               </svg>
             </div>
-            <h2 className="font-display text-[26px] mb-2">Documento Guardado!</h2>
-            <p className="text-ink-mid text-sm mb-6"><strong>{docTitle}</strong> guardado em {categoryLabel}.</p>
+            <h2 className="font-display text-[26px] mb-2">
+              {files.length === 1 ? 'Documento Guardado!' : `${files.length} Documentos Guardados!`}
+            </h2>
+            <p className="text-ink-mid text-sm mb-6">
+              {files.length === 1
+                ? <><strong>{files[0]?.name}</strong> guardado em {categoryLabel}.</>
+                : <><strong>{files.length} ficheiros</strong> guardados em {categoryLabel}.</>}
+            </p>
             <div className="flex flex-col gap-2">
               <button onClick={() => router.push(backHref)}
                       className="w-full py-3.5 text-white font-bold text-sm rounded-full hover:opacity-90 transition-opacity"
                       style={{ background: accentColor }}>
                 Ver em {categoryLabel}
               </button>
-              <button onClick={() => { setStep(1); setFile(null); setDocTitle(''); setDocType('outro'); setRefDate(new Date().toISOString().slice(0, 7)) }}
+              <button onClick={() => { setStep(1); setFiles([]); setDocType('outro'); setRefDate(new Date().toISOString().slice(0, 7)); setUploadProgress(0) }}
                       className="w-full py-3 border border-sand rounded-xl text-sm text-ink-mid hover:bg-parchment-2 transition-colors">
-                Carregar outro documento
+                Carregar mais documentos
               </button>
             </div>
           </div>

@@ -37,6 +37,9 @@ model Folder {
   id          String    @id @default(cuid())
   name        String
   category    String    // FINANCEIRO | MANUAIS | ESTRATEGIA
+  parentId    String?
+  parent      Folder?   @relation("SubFolders", fields: [parentId], references: [id])
+  children    Folder[]  @relation("SubFolders")
   createdById String
   createdBy   User      @relation(fields: [createdById], references: [id])
   createdAt   DateTime  @default(now())

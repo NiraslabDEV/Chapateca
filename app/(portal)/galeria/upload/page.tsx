@@ -157,12 +157,12 @@ export default function UploadPage() {
         {/* STEP 2 */}
         {step === 2 && (
           <div>
-            <h2 className="font-display text-[26px] text-center mb-6">Detalhes da Actividade</h2>
+            <h2 className="font-display text-[26px] text-center mb-6">Detalhes do Projecto</h2>
 
             <div className="flex flex-col gap-5">
               <div>
                 <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">
-                  Local <span className="text-red-500">*</span>
+                  Local do Projecto <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft" />
@@ -189,7 +189,7 @@ export default function UploadPage() {
 
               <div>
                 <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">
-                  Nome da Actividade
+                  Nome do Projecto
                 </label>
                 <input type="text" value={activityName} onChange={e => setActivityName(e.target.value)}
                        placeholder="Ex: Distribuição de livros, Formação de voluntários..."

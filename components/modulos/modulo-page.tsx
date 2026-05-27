@@ -18,6 +18,31 @@ interface ModuloPageProps {
   uploadHref: string
 }
 
+function mapFile(fl: {
+  id: string
+  googleDriveId: string
+  activityName: string | null
+  fileName: string
+  fileType: string
+  fileSize?: number | null
+  mimeType: string
+  createdAt: Date
+  uploadedBy?: { name: string } | null
+}) {
+  const name = fl.uploadedBy?.name ?? 'Equipa'
+  return {
+    id: fl.id,
+    driveId: fl.googleDriveId,
+    title: fl.activityName || fl.fileName,
+    fileName: fl.fileName,
+    fileType: fl.fileType,
+    fileSize: (fl as { fileSize?: number | null }).fileSize ?? null,
+    uploaderName: name,
+    uploaderInitials: name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase(),
+    createdAt: fl.createdAt.toISOString(),
+  }
+}
+
 export default async function ModuloPage({
   category,
   accessKey,
@@ -32,14 +57,33 @@ export default async function ModuloPage({
   if (!role) redirect('/')
 
   const r = ROLES[role]
-  if (!r.access[accessKey]) redirect('/acesso-negado')
+
+  // Verifica acesso efectivo (pode ser substituído pela admin na DB)
+  let hasAccess = r.access[accessKey]
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: r.email },
+      select: { accessGaleria: true, accessManuais: true, accessEstrategia: true, accessFinancas: true },
+    })
+    if (user) {
+      const dbMap: Record<string, boolean | null> = {
+        galeria: user.accessGaleria,
+        manuais: user.accessManuais,
+        estrategia: user.accessEstrategia,
+        financas: user.accessFinancas,
+      }
+      hasAccess = dbMap[accessKey] ?? r.access[accessKey]
+    }
+  } catch { /* DB indisponível — usa acesso estático */ }
+
+  if (!hasAccess) redirect('/acesso-negado')
 
   let folders: Parameters<typeof ModuloContent>[0]['folders'] = []
   let dbConnected = false
 
   try {
     const raw = await prisma.folder.findMany({
-      where: { category },
+      where: { category, parentId: null },
       orderBy: { createdAt: 'asc' },
       include: {
         _count: { select: { files: true } },
@@ -48,6 +92,17 @@ export default async function ModuloPage({
           orderBy: { createdAt: 'desc' },
           include: { uploadedBy: true },
         },
+        children: {
+          orderBy: { createdAt: 'asc' },
+          include: {
+            _count: { select: { files: true } },
+            files: {
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+              include: { uploadedBy: true },
+            },
+          },
+        },
       },
     })
     dbConnected = true
@@ -55,24 +110,17 @@ export default async function ModuloPage({
       id: f.id,
       name: f.name,
       totalCount: f._count.files,
-      files: f.files.map(fl => {
-        const name = fl.uploadedBy?.name ?? 'Equipa'
-        return {
-          id: fl.id,
-          driveId: fl.googleDriveId,
-          title: fl.activityName || fl.fileName,
-          fileName: fl.fileName,
-          fileType: fl.fileType,
-          fileSize: (fl as { fileSize?: number | null }).fileSize ?? null,
-          uploaderName: name,
-          uploaderInitials: name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase(),
-          createdAt: fl.createdAt.toISOString(), // serializable for client boundary
-        }
-      }),
+      files: f.files.map(mapFile),
+      children: f.children.map(c => ({
+        id: c.id,
+        name: c.name,
+        totalCount: c._count.files,
+        files: c.files.map(mapFile),
+      })),
     }))
   } catch { /* DB não disponível */ }
 
-  const totalFiles = folders.reduce((a, f) => a + f.totalCount, 0)
+  const totalFiles = folders.reduce((a, f) => a + f.totalCount + (f.children ?? []).reduce((b, c) => b + c.totalCount, 0), 0)
 
   return (
     <div>

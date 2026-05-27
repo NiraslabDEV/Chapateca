@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
-  const { name, category } = await req.json()
+  const { name, category, parentId } = await req.json()
   if (!name?.trim()) return NextResponse.json({ error: 'Nome obrigatório' }, { status: 400 })
   if (!VALID_CATEGORIES.includes(category)) return NextResponse.json({ error: 'Categoria inválida' }, { status: 400 })
   if (!hasAccess(category as DocCategory, role)) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
@@ -37,7 +37,12 @@ export async function POST(req: NextRequest) {
   }
 
   const folder = await prisma.folder.create({
-    data: { name: name.trim(), category, createdById: userId },
+    data: {
+      name: name.trim(),
+      category,
+      createdById: userId,
+      ...(parentId ? { parentId } : {}),
+    },
   })
 
   return NextResponse.json({ id: folder.id, name: folder.name })

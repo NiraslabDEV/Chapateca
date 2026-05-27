@@ -12,17 +12,27 @@ export default async function ManuaisUploadPage({
   const store = await cookies()
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) redirect('/')
-  if (!ROLES[role].access.manuais) redirect('/acesso-negado')
+  const r = ROLES[role]
+  let hasAccess = r.access.manuais
+  try {
+    const u = await prisma.user.findUnique({ where: { email: r.email }, select: { accessManuais: true } })
+    if (u) hasAccess = u.accessManuais ?? r.access.manuais
+  } catch { /* usa estático */ }
+  if (!hasAccess) redirect('/acesso-negado')
 
   const { folder: preselectedFolderId } = await searchParams
 
-  let folders: { id: string; name: string }[] = []
+  let folders: { id: string; name: string; depth?: number }[] = []
   try {
-    folders = await prisma.folder.findMany({
-      where: { category: 'MANUAIS' },
+    const raw = await prisma.folder.findMany({
+      where: { category: 'MANUAIS', parentId: null },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, name: true },
+      include: { children: { orderBy: { createdAt: 'asc' }, select: { id: true, name: true } } },
     })
+    for (const f of raw) {
+      folders.push({ id: f.id, name: f.name })
+      for (const c of f.children) folders.push({ id: c.id, name: c.name, depth: 1 })
+    }
   } catch { /* DB indisponível */ }
 
   return (

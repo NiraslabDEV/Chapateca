@@ -35,7 +35,7 @@ function hasAccess(category: DocCategory, role: keyof typeof ROLES) {
   return r.access.estrategia
 }
 
-export async function createFolderAction(category: DocCategory, name: string) {
+export async function createFolderAction(category: DocCategory, name: string, parentId?: string) {
   const store = await cookies()
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) throw new Error('Não autenticado')
@@ -44,7 +44,12 @@ export async function createFolderAction(category: DocCategory, name: string) {
   const userId = await ensureUser(role)
 
   await prisma.folder.create({
-    data: { name: name.trim(), category, createdById: userId },
+    data: {
+      name: name.trim(),
+      category,
+      createdById: userId,
+      ...(parentId ? { parentId } : {}),
+    },
   })
 
   revalidatePath(CATEGORY_PATHS[category])

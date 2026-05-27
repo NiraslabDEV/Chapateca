@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic'
 
 import { prisma } from '@/lib/prisma'
 import { ACTIVITY_TYPES } from '@/lib/activity-types'
-import { MapPin, Calendar, Users } from 'lucide-react'
+import { MapPin, Calendar, Users, Download } from 'lucide-react'
+import DownloadAllPhotos from '@/components/galeria/download-all-photos'
 
 export default async function PublicAlbumPage({
   params,
@@ -43,7 +44,7 @@ export default async function PublicAlbumPage({
     )
   }
 
-  const title = album.activityName || 'Actividade de Campo'
+  const title = album.activityName || 'Projecto de Campo'
   const formattedDate = album.activityDate.toLocaleDateString('pt-MZ', {
     day: 'numeric',
     month: 'long',
@@ -59,7 +60,7 @@ export default async function PublicAlbumPage({
       >
         <div className="max-w-2xl mx-auto">
           <div className="text-2xl font-bold tracking-tight mb-1">Chapateca</div>
-          <div className="text-sm opacity-70 mb-8 tracking-widest uppercase">Actividade de Campo</div>
+          <div className="text-sm opacity-70 mb-8 tracking-widest uppercase">Projecto de Campo</div>
           <h1 className="text-3xl font-bold leading-tight mb-4">{title}</h1>
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm opacity-85">
             <span className="flex items-center gap-1.5">
@@ -88,6 +89,16 @@ export default async function PublicAlbumPage({
               </span>
             </div>
           )}
+          {album.photos.length > 0 && (
+            <div className="mt-6">
+              <DownloadAllPhotos
+                urls={album.photos
+                  .filter(p => !p.googleDriveId.startsWith('mock-'))
+                  .map(p => p.googleDriveId)}
+                token={token}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -106,7 +117,7 @@ export default async function PublicAlbumPage({
                 'linear-gradient(135deg, #461882, #7c3aed)',
               ]
               return (
-                <div key={photo.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-sm">
+                <div key={photo.id} className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-sm">
                   {isMock ? (
                     <div
                       className="w-full h-full flex items-center justify-center"
@@ -117,13 +128,25 @@ export default async function PublicAlbumPage({
                       </span>
                     </div>
                   ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={`/api/photo/${token}/${photo.googleDriveId}?w=600`}
-                      alt={photo.fileName}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/api/photo/${token}/${photo.googleDriveId}?w=600`}
+                        alt={photo.fileName}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-2">
+                        <a
+                          href={`/api/photo/${token}/${photo.googleDriveId}?download=1`}
+                          download={photo.fileName}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 rounded-full text-[12px] font-semibold text-gray-800 hover:bg-white transition-colors"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <Download size={12} /> Guardar
+                        </a>
+                      </div>
+                    </>
                   )}
                 </div>
               )
