@@ -3,14 +3,29 @@ import { cookies } from 'next/headers'
 import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
 
-const CATEGORY_ACCESS: Record<string, (r: ReturnType<typeof ROLES[keyof typeof ROLES]['access']['financas'] extends boolean ? never : never> extends never ? typeof ROLES[keyof typeof ROLES] : never) => boolean> = {}
-
-function canAccessCategory(category: string, role: keyof typeof ROLES): boolean {
+async function canAccessCategory(category: string, role: keyof typeof ROLES): Promise<boolean> {
   const r = ROLES[role]
-  if (category === 'FINANCEIRO') return r.access.financas
-  if (category === 'MANUAIS') return r.access.manuais
-  if (category === 'ESTRATEGIA') return r.access.estrategia
-  return false
+  const staticAccess =
+    category === 'FINANCEIRO' ? r.access.financas
+    : category === 'MANUAIS'    ? r.access.manuais
+    : category === 'ESTRATEGIA' ? r.access.estrategia
+    :                             false
+
+  try {
+    const u = await prisma.user.findUnique({
+      where: { email: r.email },
+      select: { accessFinancas: true, accessManuais: true, accessEstrategia: true },
+    })
+    if (!u) return staticAccess
+    const dbValue =
+      category === 'FINANCEIRO' ? u.accessFinancas
+      : category === 'MANUAIS'    ? u.accessManuais
+      : category === 'ESTRATEGIA' ? u.accessEstrategia
+      :                             null
+    return dbValue ?? staticAccess
+  } catch {
+    return staticAccess
+  }
 }
 
 export async function GET(
@@ -36,7 +51,7 @@ export async function GET(
       where: { googleDriveId: driveId },
     })
     if (!log) return new NextResponse('Ficheiro não encontrado', { status: 404 })
-    if (!canAccessCategory(log.category, role)) {
+    if (!(await canAccessCategory(log.category, role))) {
       return new NextResponse('Sem permissão', { status: 403 })
     }
     fileName = log.fileName

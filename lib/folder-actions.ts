@@ -28,18 +28,34 @@ async function ensureUser(roleKey: string) {
   }
 }
 
-function hasAccess(category: DocCategory, role: keyof typeof ROLES) {
+async function hasAccess(category: DocCategory, role: keyof typeof ROLES) {
   const r = ROLES[role]
-  if (category === 'FINANCEIRO') return r.access.financas
-  if (category === 'MANUAIS') return r.access.manuais
-  return r.access.estrategia
+  const staticAccess =
+    category === 'FINANCEIRO' ? r.access.financas
+    : category === 'MANUAIS'    ? r.access.manuais
+    :                             r.access.estrategia
+
+  try {
+    const u = await prisma.user.findUnique({
+      where: { email: r.email },
+      select: { accessFinancas: true, accessManuais: true, accessEstrategia: true },
+    })
+    if (!u) return staticAccess
+    const dbValue =
+      category === 'FINANCEIRO' ? u.accessFinancas
+      : category === 'MANUAIS'    ? u.accessManuais
+      :                             u.accessEstrategia
+    return dbValue ?? staticAccess
+  } catch {
+    return staticAccess
+  }
 }
 
 export async function createFolderAction(category: DocCategory, name: string, parentId?: string) {
   const store = await cookies()
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) throw new Error('Não autenticado')
-  if (!hasAccess(category, role)) throw new Error('Sem permissão')
+  if (!(await hasAccess(category, role))) throw new Error('Sem permissão')
 
   const userId = await ensureUser(role)
 
