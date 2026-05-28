@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Upload, Eye, Download, FolderOpen, Clock, X, ExternalLink, FileText, FileSpreadsheet, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react'
+import { Upload, Eye, Download, FolderOpen, Clock, X, ExternalLink, FileText, FileSpreadsheet, AlertCircle, ChevronDown, ChevronRight, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import CriarPasta from './criar-pasta'
-import type { DocCategory } from '@/lib/folder-actions'
+import ConfirmDeleteModal from '@/components/ui/confirm-delete-modal'
+import { deleteFolderAction, deleteDocAction, type DocCategory } from '@/lib/folder-actions'
 
 const TYPE_COLORS: Record<string, string> = {
   PDF: 'bg-red-600',
@@ -70,10 +72,12 @@ function FileRow({
   file,
   accentColor,
   onPreview,
+  onDelete,
 }: {
   file: FileItem
   accentColor: string
   onPreview: (f: FileItem) => void
+  onDelete: (f: FileItem) => void
 }) {
   return (
     <div className="flex items-center gap-3 px-6 py-3 group hover:bg-parchment-2 transition-colors">
@@ -105,6 +109,13 @@ function FileRow({
            className="flex items-center gap-1 px-2.5 py-1 border border-sand rounded-lg text-[11px] font-medium text-ink-mid hover:border-ink-soft transition-colors">
           <Download size={11} /> Baixar
         </a>
+        <button
+          onClick={() => onDelete(file)}
+          title="Apagar ficheiro"
+          className="flex items-center px-2 py-1 border border-red-200 rounded-lg text-red-600 hover:border-red-400 hover:bg-red-50 transition-colors"
+        >
+          <Trash2 size={11} />
+        </button>
       </div>
     </div>
   )
@@ -116,12 +127,16 @@ function SubFolderCard({
   accentBg,
   uploadHref,
   onPreview,
+  onDeleteFile,
+  onDeleteFolder,
 }: {
   sub: SubFolderItem
   accentColor: string
   accentBg: string
   uploadHref: string
   onPreview: (f: FileItem) => void
+  onDeleteFile: (f: FileItem) => void
+  onDeleteFolder: (folder: { id: string; name: string }) => void
 }) {
   const [open, setOpen] = useState(true)
 
@@ -140,21 +155,30 @@ function SubFolderCard({
             {sub.totalCount} doc{sub.totalCount !== 1 ? 's' : ''}
           </span>
         </div>
-        <Link
-          href={`${uploadHref}?folder=${sub.id}`}
-          onClick={e => e.stopPropagation()}
-          style={{ color: accentColor, borderColor: `${accentColor}40` }}
-          className="flex items-center gap-1 px-2.5 py-1 border rounded-lg text-[11px] font-semibold bg-white/60 hover:bg-white transition-colors"
-        >
-          <Upload size={11} /> Carregar
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`${uploadHref}?folder=${sub.id}`}
+            onClick={e => e.stopPropagation()}
+            style={{ color: accentColor, borderColor: `${accentColor}40` }}
+            className="flex items-center gap-1 px-2.5 py-1 border rounded-lg text-[11px] font-semibold bg-white/60 hover:bg-white transition-colors"
+          >
+            <Upload size={11} /> Carregar
+          </Link>
+          <button
+            onClick={e => { e.stopPropagation(); onDeleteFolder({ id: sub.id, name: sub.name }) }}
+            title="Apagar sub-pasta"
+            className="flex items-center px-2 py-1 border border-red-200 bg-white/60 rounded-lg text-red-600 hover:border-red-400 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={11} />
+          </button>
+        </div>
       </div>
 
       {open && (
         sub.files.length > 0 ? (
           <div className="divide-y divide-sand-light">
             {sub.files.map(file => (
-              <FileRow key={file.id} file={file} accentColor={accentColor} onPreview={onPreview} />
+              <FileRow key={file.id} file={file} accentColor={accentColor} onPreview={onPreview} onDelete={onDeleteFile} />
             ))}
             {sub.totalCount > 5 && (
               <div className="px-6 py-2.5 flex items-center gap-1.5 text-xs text-ink-soft font-mono">
@@ -173,7 +197,10 @@ function SubFolderCard({
 }
 
 export default function ModuloContent({ category, folders, accentColor, accentBg, uploadHref, dbConnected }: Props) {
+  const router = useRouter()
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
+  const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null)
+  const [folderToDelete, setFolderToDelete] = useState<{ id: string; name: string; isSub?: boolean } | null>(null)
 
   return (
     <>
@@ -198,6 +225,13 @@ export default function ModuloContent({ category, folders, accentColor, accentBg
                         className="flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-xs font-semibold bg-white/60 hover:bg-white transition-colors">
                     <Upload size={12} /> Carregar
                   </Link>
+                  <button
+                    onClick={() => setFolderToDelete({ id: folder.id, name: folder.name })}
+                    title="Apagar pasta (e tudo dentro)"
+                    className="flex items-center px-2.5 py-1.5 border border-red-200 bg-white/60 rounded-lg text-red-600 hover:border-red-400 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={12} />
+                  </button>
                 </div>
               </div>
 
@@ -205,7 +239,7 @@ export default function ModuloContent({ category, folders, accentColor, accentBg
               {folder.files.length > 0 ? (
                 <div className="divide-y divide-sand-light">
                   {folder.files.map(file => (
-                    <FileRow key={file.id} file={file} accentColor={accentColor} onPreview={setSelectedFile} />
+                    <FileRow key={file.id} file={file} accentColor={accentColor} onPreview={setSelectedFile} onDelete={setFileToDelete} />
                   ))}
                   {folder.totalCount > 5 && (
                     <div className="px-6 py-3 flex items-center gap-1.5 text-xs text-ink-soft font-mono">
@@ -230,6 +264,8 @@ export default function ModuloContent({ category, folders, accentColor, accentBg
                       accentBg={accentBg}
                       uploadHref={uploadHref}
                       onPreview={setSelectedFile}
+                      onDeleteFile={setFileToDelete}
+                      onDeleteFolder={(f) => setFolderToDelete({ ...f, isSub: true })}
                     />
                   ))}
                 </div>
@@ -309,6 +345,36 @@ export default function ModuloContent({ category, folders, accentColor, accentBg
           </div>
         </>
       )}
+
+      {/* Modal: apagar ficheiro */}
+      <ConfirmDeleteModal
+        open={!!fileToDelete}
+        onClose={() => setFileToDelete(null)}
+        title="Apagar ficheiro?"
+        description={fileToDelete ? `O ficheiro "${fileToDelete.title}" será removido permanentemente do portal e do Google Drive. Esta acção é irreversível.` : ''}
+        onConfirm={async () => {
+          if (!fileToDelete) return { ok: false }
+          const res = await deleteDocAction(fileToDelete.id)
+          if (res.ok) router.refresh()
+          return res
+        }}
+      />
+
+      {/* Modal: apagar pasta (ou sub-pasta) */}
+      <ConfirmDeleteModal
+        open={!!folderToDelete}
+        onClose={() => setFolderToDelete(null)}
+        title={folderToDelete?.isSub ? 'Apagar sub-pasta?' : 'Apagar pasta?'}
+        description={folderToDelete
+          ? `A pasta "${folderToDelete.name}" e ${folderToDelete.isSub ? 'todos os ficheiros dentro dela' : 'todas as suas sub-pastas e ficheiros'} serão eliminados do portal e do Google Drive. Esta acção é irreversível.`
+          : ''}
+        onConfirm={async () => {
+          if (!folderToDelete) return { ok: false }
+          const res = await deleteFolderAction(folderToDelete.id)
+          if (res.ok) router.refresh()
+          return res
+        }}
+      />
     </>
   )
 }
