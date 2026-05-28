@@ -141,7 +141,6 @@ export default async function PublicAlbumPage({
                           href={`/api/photo/${token}/${photo.googleDriveId}?download=1`}
                           download={photo.fileName}
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 rounded-full text-[12px] font-semibold text-gray-800 hover:bg-white transition-colors"
-                          onClick={e => e.stopPropagation()}
                         >
                           <Download size={12} /> Guardar
                         </a>
