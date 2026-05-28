@@ -75,51 +75,46 @@ export default function TaskCardChat({ task, perspective, me, peer, messages, un
   return (
     <div
       className={[
-        'border rounded-2xl overflow-hidden transition-all',
+        'border rounded-xl overflow-hidden transition-all',
         isOpen
           ? 'border-[#461882]/40 shadow-[0_8px_28px_rgba(70,24,130,0.15)] bg-white'
           : 'border-sand-light bg-white hover:border-[#461882]/25 hover:shadow-[0_2px_12px_rgba(22,20,18,0.06)]',
       ].join(' ')}
     >
-      {/* Header — sempre visível */}
+      {/* Header — compacto, sem avatar (a pessoa já é o grupo-pai) */}
       <div
         className={[
-          'p-4 cursor-pointer transition-colors',
+          'px-4 py-3 cursor-pointer transition-colors',
           isOpen ? 'bg-[#461882]/5' : 'hover:bg-parchment-2/40',
         ].join(' ')}
         onClick={handleToggle}
       >
         <div className="flex items-start gap-3">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white shadow-sm"
-                 style={{ background: peer.color }}>
-              {peer.initials}
-            </div>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </div>
+          {/* Indicador pequeno de não-lidas */}
+          {unreadCount > 0 && (
+            <div className="w-2 h-2 rounded-full bg-red-500 mt-2 flex-shrink-0 animate-pulse" />
+          )}
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="text-[12px] font-medium text-ink-mid">
-                {perspective === 'inbox' ? `De ${peer.name}` : `Para ${peer.name}`}
+            <p className="text-[14px] font-semibold text-ink leading-snug mb-1">{task.title}</p>
+            <div className="flex items-center gap-2 text-[11px] text-ink-soft font-mono flex-wrap">
+              <span>{timeAgo(task.createdAt)}</span>
+              <span>·</span>
+              <span className="flex items-center gap-1">
+                <MessageCircle size={10} />
+                {messageCount} {messageCount === 1 ? 'msg' : 'msgs'}
+                {unreadCount > 0 && (
+                  <span className="ml-1 px-1.5 py-px rounded-full bg-red-500 text-white text-[9px] font-bold">
+                    +{unreadCount} nova{unreadCount !== 1 ? 's' : ''}
+                  </span>
+                )}
               </span>
-              <span className="text-[11px] text-ink-soft font-mono">{timeAgo(task.createdAt)}</span>
-            </div>
-            <p className="text-sm font-semibold text-ink mb-0.5">{task.title}</p>
-            <div className="flex items-center gap-2 text-[11px] text-ink-soft font-mono">
-              <MessageCircle size={11} />
-              <span>{messageCount} {messageCount === 1 ? 'mensagem' : 'mensagens'}</span>
-              {task.doneAt && <span className="text-green-600">· ✓ {timeAgo(task.doneAt)}</span>}
+              {task.doneAt && <><span>·</span><span className="text-green-600">✓ {timeAgo(task.doneAt)}</span></>}
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-2 flex-shrink-0">
-            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${cfg.color}`}>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cfg.color}`}>
               {cfg.label}
             </span>
             <div className={isOpen ? 'text-[#461882]' : 'text-ink-soft'}>
@@ -138,19 +133,20 @@ export default function TaskCardChat({ task, perspective, me, peer, messages, un
             background: 'linear-gradient(180deg, #F5F0FA 0%, #F9F6FC 40%, #FBF9FD 100%)',
           }}
         >
-          {/* Header da conversa */}
+          {/* Header da conversa — com foto do peer */}
           <div className="px-4 py-2.5 border-b border-[#461882]/10 bg-white/70 backdrop-blur-sm flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+            <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-[10px] font-bold text-white"
                  style={{ background: peer.color }}>
-              {peer.initials}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {peer.image ? <img src={peer.image} alt={peer.name} className="w-full h-full object-cover" /> : peer.initials}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[13px] font-semibold text-ink leading-tight">{peer.name}</div>
-              <div className="text-[10px] text-ink-soft font-mono">Conversa privada</div>
+              <div className="text-[13px] font-semibold text-ink leading-tight truncate">{task.title}</div>
+              <div className="text-[10px] text-ink-soft font-mono">Conversa privada com {peer.name}</div>
             </div>
-            <div className="flex items-center gap-1 text-[10px] text-ink-soft font-mono">
+            <div className="flex items-center gap-1 text-[10px] text-ink-soft font-mono flex-shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-[#461882]" />
-              {messageCount} {messageCount === 1 ? 'msg' : 'msgs'}
+              {messageCount}
             </div>
           </div>
 

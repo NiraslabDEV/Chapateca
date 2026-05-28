@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import TaskCardChat from './task-card-chat'
+import { useState, useMemo } from 'react'
+import PeerGroup from './peer-group'
 import type { ChatMessage, ChatParty } from './task-chat'
 import { MessageSquare, Send, Clock, RotateCcw, CheckCheck } from 'lucide-react'
 
@@ -31,29 +31,44 @@ interface Props {
   inboxTotal: number
 }
 
+/** Agrupa tarefas por email do peer, mantém ordem por última actividade */
+function groupByPeer(tasks: SerializedTask[]): { peer: ChatParty; tasks: SerializedTask[]; lastActivity: number }[] {
+  const map = new Map<string, { peer: ChatParty; tasks: SerializedTask[] }>()
+  for (const t of tasks) {
+    const k = t.peer.email
+    if (!map.has(k)) map.set(k, { peer: t.peer, tasks: [] })
+    map.get(k)!.tasks.push(t)
+  }
+  const groups = Array.from(map.values()).map(g => {
+    const lastActivity = Math.max(
+      ...g.tasks.flatMap(t => [
+        new Date(t.task.createdAt).getTime(),
+        ...t.messages.map(m => new Date(m.createdAt).getTime()),
+      ])
+    )
+    return { ...g, lastActivity }
+  })
+  // Ordenar: grupos com mensagens não lidas primeiro, depois por última actividade
+  return groups.sort((a, b) => {
+    const aUnread = a.tasks.reduce((s, t) => s + t.unreadCount, 0)
+    const bUnread = b.tasks.reduce((s, t) => s + t.unreadCount, 0)
+    if (aUnread !== bUnread) return bUnread - aUnread
+    return b.lastActivity - a.lastActivity
+  })
+}
+
 export default function TarefasShell({ me, inProgress, concluded, sent, isAdmin, totalUnreadInProgress, inboxTotal }: Props) {
   // Estado global do accordion — só um chat aberto de cada vez
   const [openId, setOpenId] = useState<string | null>(() => {
-    // Abre automaticamente o primeiro com mensagens não lidas
     const first = inProgress.find(t => t.unreadCount > 0)
     return first?.task.id ?? null
   })
 
   const toggle = (id: string) => setOpenId(prev => (prev === id ? null : id))
 
-  const renderTask = (item: SerializedTask, perspective: 'inbox' | 'sent') => (
-    <TaskCardChat
-      key={item.task.id}
-      task={item.task}
-      perspective={perspective}
-      me={me}
-      peer={item.peer}
-      messages={item.messages}
-      unreadCount={item.unreadCount}
-      isOpen={openId === item.task.id}
-      onToggle={() => toggle(item.task.id)}
-    />
-  )
+  const inProgressGroups = useMemo(() => groupByPeer(inProgress), [inProgress])
+  const concludedGroups  = useMemo(() => groupByPeer(concluded),  [concluded])
+  const sentGroups       = useMemo(() => groupByPeer(sent),       [sent])
 
   return (
     <>
@@ -68,7 +83,7 @@ export default function TarefasShell({ me, inProgress, concluded, sent, isAdmin,
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 max-w-5xl">
+      <div className="flex flex-col lg:flex-row gap-6 max-w-6xl">
 
         {/* Coluna principal: inbox */}
         <div className="flex-1 min-w-0">
@@ -94,7 +109,17 @@ export default function TarefasShell({ me, inProgress, concluded, sent, isAdmin,
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {inProgress.map(item => renderTask(item, 'inbox'))}
+                {inProgressGroups.map(g => (
+                  <PeerGroup
+                    key={g.peer.email}
+                    peer={g.peer}
+                    me={me}
+                    tasks={g.tasks}
+                    perspective="inbox"
+                    openTaskId={openId}
+                    onToggleTask={toggle}
+                  />
+                ))}
               </div>
             )}
           </section>
@@ -111,19 +136,34 @@ export default function TarefasShell({ me, inProgress, concluded, sent, isAdmin,
                 <span className="text-[11px] text-ink-soft font-mono group-open:hidden">▾ mostrar</span>
                 <span className="text-[11px] text-ink-soft font-mono hidden group-open:inline">▴ ocultar</span>
               </summary>
-              <div className="flex flex-col gap-3 opacity-70 hover:opacity-100 transition-opacity">
-                {concluded.map(item => renderTask(item, 'inbox'))}
+              <div className="flex flex-col gap-3 opacity-80 hover:opacity-100 transition-opacity">
+                {concludedGroups.map(g => (
+                  <PeerGroup
+                    key={g.peer.email}
+                    peer={g.peer}
+                    me={me}
+                    tasks={g.tasks}
+                    perspective="inbox"
+                    openTaskId={openId}
+                    onToggleTask={toggle}
+                  />
+                ))}
               </div>
             </details>
           )}
         </div>
 
-        {/* Coluna lateral: enviadas (admins) */}
+        {/* Coluna lateral: enviadas (admins) — agora também agrupadas por destinatário */}
         {isAdmin && (
-          <div className="lg:w-80 flex-shrink-0">
+          <div className="lg:w-96 flex-shrink-0">
             <div className="flex items-center gap-2 mb-3">
               <Send size={15} className="text-forest" />
               <h2 className="text-sm font-semibold text-ink">Tarefas Enviadas</h2>
+              {sent.length > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full bg-forest text-white text-[10px] font-bold font-mono">
+                  {sent.length}
+                </span>
+              )}
             </div>
 
             {sent.length === 0 ? (
@@ -133,7 +173,17 @@ export default function TarefasShell({ me, inProgress, concluded, sent, isAdmin,
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {sent.map(item => renderTask(item, 'sent'))}
+                {sentGroups.map(g => (
+                  <PeerGroup
+                    key={g.peer.email}
+                    peer={g.peer}
+                    me={me}
+                    tasks={g.tasks}
+                    perspective="sent"
+                    openTaskId={openId}
+                    onToggleTask={toggle}
+                  />
+                ))}
               </div>
             )}
           </div>

@@ -18,6 +18,7 @@ export type ChatParty = {
   name: string
   initials: string
   color: string
+  image?: string | null  // foto de perfil em data URL
 }
 
 interface Props {
@@ -49,10 +50,11 @@ function Bubble({ msg, isMine, peer, me }: { msg: ChatMessage; isMine: boolean; 
   return (
     <div className={`flex gap-2 ${isMine ? 'flex-row-reverse' : ''}`}>
       <div
-        className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5"
+        className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5"
         style={{ background: author.color }}
       >
-        {author.initials}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {author.image ? <img src={author.image} alt={author.name} className="w-full h-full object-cover" /> : author.initials}
       </div>
       <div className={`flex flex-col max-w-[78%] ${isMine ? 'items-end' : 'items-start'}`}>
         <div

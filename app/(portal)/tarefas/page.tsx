@@ -6,9 +6,17 @@ import ComposePanel from '@/components/tarefas/compose-panel'
 import TarefasShell, { type SerializedTask } from '@/components/tarefas/tarefas-shell'
 import type { ChatParty } from '@/components/tarefas/task-chat'
 
-function emailToParty(email: string, fallback?: ChatParty): ChatParty {
+function emailToParty(email: string, imagesByEmail: Map<string, string | null>, fallback?: ChatParty): ChatParty {
   const role = Object.values(ROLES).find(r => r.email === email)
-  if (role) return { email: role.email, name: role.name, initials: role.initials, color: role.color }
+  if (role) {
+    return {
+      email: role.email,
+      name: role.name,
+      initials: role.initials,
+      color: role.color,
+      image: imagesByEmail.get(role.email) ?? null,
+    }
+  }
   return fallback ?? { email, name: email, initials: '??', color: '#8B7FA8' }
 }
 
@@ -19,7 +27,18 @@ export default async function TarefasPage() {
 
   const r = ROLES[roleKey as RoleKey]
   const isAdmin = r.group === 'admin'
-  const me: ChatParty = { email: r.email, name: r.name, initials: r.initials, color: r.color }
+
+  // Buscar todas as fotos de uma vez para usar nos avatares de quem mandou/recebeu
+  let imagesByEmail = new Map<string, string | null>()
+  try {
+    const allDbUsers = await prisma.user.findMany({ select: { email: true, image: true } })
+    imagesByEmail = new Map(allDbUsers.map(u => [u.email, u.image]))
+  } catch { /* DB indisponível */ }
+
+  const me: ChatParty = {
+    email: r.email, name: r.name, initials: r.initials, color: r.color,
+    image: imagesByEmail.get(r.email) ?? null,
+  }
 
   const recipients = Object.values(ROLES)
     .filter(u => u.email !== r.email)
@@ -62,7 +81,7 @@ export default async function TarefasPage() {
 
   const serialize = (t: TaskWithMessages, perspective: 'inbox' | 'sent'): SerializedTask => {
     const peerEmail = perspective === 'inbox' ? t.fromEmail : t.toEmail
-    const peer = emailToParty(peerEmail)
+    const peer = emailToParty(peerEmail, imagesByEmail)
     const unreadCount = t.messages.filter(m => m.fromEmail !== r.email && !m.readByPeer).length
     return {
       task: {
