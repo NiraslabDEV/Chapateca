@@ -61,9 +61,10 @@ export default async function PortalLayout({ children }: { children: React.React
   if (!role) redirect('/')
 
   const r = ROLES[role]
-  const [effectiveAccess, { task: pendingTask, unreadCount }] = await Promise.all([
+  const [effectiveAccess, { task: pendingTask, unreadCount }, dbUser] = await Promise.all([
     getEffectiveAccess(role as RoleKey),
     getPendingTask(r.email),
+    prisma.user.findUnique({ where: { email: r.email }, select: { image: true } }).catch(() => null),
   ])
 
   return (
@@ -72,6 +73,7 @@ export default async function PortalLayout({ children }: { children: React.React
       effectiveAccess={effectiveAccess}
       pendingTask={pendingTask}
       unreadCount={unreadCount}
+      avatarUrl={dbUser?.image ?? null}
     >
       {children}
     </PortalLayoutClient>

@@ -11,10 +11,11 @@ interface TopbarProps {
   role: RoleKey
   crumbs?: string[]
   unreadCount?: number
+  avatarUrl?: string | null
   onMenuClick?: () => void
 }
 
-export default function Topbar({ role, crumbs = [], unreadCount = 0, onMenuClick }: TopbarProps) {
+export default function Topbar({ role, crumbs = [], unreadCount = 0, avatarUrl, onMenuClick }: TopbarProps) {
   const r = ROLES[role]
   return (
     <header className="h-16 bg-forest border-b border-forest-mid flex items-center px-4 md:px-6 gap-3 md:gap-6 sticky top-0 z-50">
@@ -60,17 +61,19 @@ export default function Topbar({ role, crumbs = [], unreadCount = 0, onMenuClick
         {/* Notificações — dropdown funcional */}
         <NotificationsBell initialUnreadCount={unreadCount} />
 
-        {/* Avatar pill */}
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 cursor-pointer hover:bg-white/15 transition-colors">
-          <div className="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[11px] md:text-[12px] font-bold text-white flex-shrink-0"
+        {/* Avatar pill — abre /perfil */}
+        <Link href="/perfil"
+              className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 cursor-pointer hover:bg-white/15 transition-colors">
+          <div className="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden flex items-center justify-center text-[11px] md:text-[12px] font-bold text-white flex-shrink-0"
                style={{ background: 'linear-gradient(135deg, #F07840, #E8652A)' }}>
-            {r.initials}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {avatarUrl ? <img src={avatarUrl} alt={r.name} className="w-full h-full object-cover" /> : r.initials}
           </div>
           <span className="hidden sm:inline text-[13px] text-white font-medium">{r.name.split(' ')[0]}</span>
           <span className="hidden md:inline">
             <RoleBadge role={role} onDark />
           </span>
-        </div>
+        </Link>
       </div>
     </header>
   )

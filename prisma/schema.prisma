@@ -18,18 +18,30 @@ model User {
   id           String    @id @default(cuid())
   name         String
   email        String    @unique
-  image        String?
+  image        String?           // URL da foto de perfil (em Drive)
   role         Role      @default(CAMPO)
-  passwordHash      String?   // null = ainda não definiu senha própria
+  passwordHash      String?      // null = ainda não definiu senha própria
   mustResetPassword Boolean   @default(false)
-  accessGaleria     Boolean?  // null = usa default do role
-  accessManuais     Boolean?  // (UI: Procedimentos Internos e Regulamentos)
-  accessEstrategia  Boolean?  // (UI: Estratégia Financeira)
-  accessFinancas    Boolean?  // (UI: Contabilidade)
+
+  // ── Campos do perfil pessoal ──
+  jobTitle     String?           // Função (ex: "Coordenadora de Campo")
+  phone        String?           // Telefone moçambicano
+  address      String?           // Morada
+  bio          String?           // Pequena biografia / descrição
+  birthDate    DateTime?         // Data de nascimento
+  joinedAt     DateTime?         // Data de entrada na Chapateca
+  emergencyContact String?       // Contacto de emergência (nome + telefone)
+
+  // ── Flags de acesso por módulo ──
+  accessGaleria     Boolean?     // null = usa default do role
+  accessManuais     Boolean?     // (UI: Procedimentos Internos e Regulamentos)
+  accessEstrategia  Boolean?     // (UI: Estratégia Financeira)
+  accessFinancas    Boolean?     // (UI: Contabilidade)
   accessDirecao     Boolean?
   accessRH          Boolean?
   accessEventos     Boolean?
   accessCocoPro     Boolean?
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   uploads      FileLog[]

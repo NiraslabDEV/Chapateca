@@ -15,10 +15,11 @@ interface Props {
   effectiveAccess: EffectiveAccess
   pendingTask: PendingTask | null
   unreadCount: number
+  avatarUrl?: string | null
   children: React.ReactNode
 }
 
-export default function PortalLayoutClient({ role, effectiveAccess, pendingTask, unreadCount, children }: Props) {
+export default function PortalLayoutClient({ role, effectiveAccess, pendingTask, unreadCount, avatarUrl, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
 
@@ -37,7 +38,7 @@ export default function PortalLayoutClient({ role, effectiveAccess, pendingTask,
 
   return (
     <div className="min-h-screen flex flex-col bg-parchment dark:bg-[#0F0A1E]">
-      <Topbar role={role} unreadCount={unreadCount} onMenuClick={() => setSidebarOpen(o => !o)} />
+      <Topbar role={role} unreadCount={unreadCount} avatarUrl={avatarUrl} onMenuClick={() => setSidebarOpen(o => !o)} />
 
       <div className="flex flex-1 min-h-0 relative">
 
@@ -61,6 +62,7 @@ export default function PortalLayoutClient({ role, effectiveAccess, pendingTask,
             role={role}
             effectiveAccess={effectiveAccess}
             unreadCount={unreadCount}
+            avatarUrl={avatarUrl}
             onClose={() => setSidebarOpen(false)}
           />
         </div>

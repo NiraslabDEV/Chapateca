@@ -47,6 +47,29 @@
 
 ## 🎯 Próximas grandes — Pedidos da Constance
 
+### Adicionar Funcionário Dinâmico (botão "Adicionar" em /equipa)
+
+**Estado:** botão já existe em `/equipa`, está disabled com label "(em breve)". Tudo o resto da página de Equipa (cards, relatório, foto, edição de perfil próprio) já está em produção.
+
+**Bloqueador técnico:** hoje os 13 utilizadores estão hardcoded em `lib/roles.ts` com um `RoleKey` enumerado. A cookie de sessão guarda essa chave. Para admins criarem novos vivos, é preciso mover a autenticação inteira da DB.
+
+**O que tem que mudar:**
+
+1. **Schema**: adicionar campos `key` único, `label`, `short`, `color`, `bg`, `group` (admin/equipa), `dbRole` ao modelo User — basicamente trazer o ROLES para a DB
+2. **Auth/cookie**: cookie passa a guardar email (ou cuid) em vez de RoleKey
+3. **getRoleFromCookie**: passa a fazer lookup na DB primeiro, fallback ao ROLES estático para retrocompatibilidade
+4. **ROLES estático**: torna-se "seed" inicial; novos users vivem só na DB
+5. **UI nova**: modal "Adicionar funcionário" com nome, email, função, dbRole, grupo, senha temporária — server action `createEmployeeAction`
+6. **UI nova**: botão "Desactivar funcionário" (soft delete via `isActive` flag, não apaga histórico)
+
+**Estimativa:** 1 dia de trabalho focado. Migração delicada — todos os logins activos têm que continuar a funcionar.
+
+**Migration safe path:**
+- Fase 1: adicionar campos novos ao User sem remover ROLES estático
+- Fase 2: criar interface de adicionar, sem mexer em auth
+- Fase 3: novos users autenticam pela DB (auth dual-path)
+- Fase 4: opcionalmente migrar os 13 originais para DB-only
+
 ### Relatórios Automáticos em Excel
 - Diário / Semanal / Mensal
 - Cada um com colunas relevantes (actividades, locais, fotos, participantes)

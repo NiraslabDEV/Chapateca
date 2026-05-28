@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, BookOpen, Crown, TrendingUp, Wallet, Users, Camera, CalendarDays, Sparkles, CheckSquare, Settings, HelpCircle, Lock, LogOut, X, Moon, Sun, type LucideIcon } from 'lucide-react'
+import { Home, BookOpen, Crown, TrendingUp, Wallet, Users, Camera, CalendarDays, Sparkles, CheckSquare, Settings, HelpCircle, Lock, LogOut, X, Moon, Sun, User as UserIcon, UsersRound, type LucideIcon } from 'lucide-react'
 import { ROLES, type RoleKey, type ModuleKey } from '@/lib/roles'
 import type { EffectiveAccess } from '@/app/(portal)/layout'
 import { MODULOS } from '@/lib/modulos'
@@ -31,19 +31,22 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/tarefas', label: 'Tarefas', icon: CheckSquare, key: null },
 ]
 
-const SECONDARY = [
-  { href: '/definicoes', label: 'Definições', icon: Settings },
-  { href: '/ajuda',      label: 'Ajuda',      icon: HelpCircle },
+const SECONDARY_BASE = [
+  { href: '/perfil',     label: 'O meu perfil', icon: UserIcon,   adminOnly: false },
+  { href: '/equipa',     label: 'Equipa',       icon: UsersRound, adminOnly: true  },
+  { href: '/definicoes', label: 'Definições',   icon: Settings,   adminOnly: false },
+  { href: '/ajuda',      label: 'Ajuda',        icon: HelpCircle, adminOnly: false },
 ]
 
 interface SidebarProps {
   role: RoleKey
   effectiveAccess: EffectiveAccess
   unreadCount: number
+  avatarUrl?: string | null
   onClose?: () => void
 }
 
-export default function Sidebar({ role, effectiveAccess, unreadCount, onClose }: SidebarProps) {
+export default function Sidebar({ role, effectiveAccess, unreadCount, avatarUrl, onClose }: SidebarProps) {
   const pathname = usePathname()
   const r = ROLES[role]
   const [dark, setDark] = useState(false)
@@ -70,12 +73,14 @@ export default function Sidebar({ role, effectiveAccess, unreadCount, onClose }:
         </button>
       </div>
 
-      {/* Perfil */}
-      <div className="px-4 pt-5 pb-4 border-b border-sand dark:border-white/10 flex flex-col gap-2">
+      {/* Perfil — clica para editar */}
+      <Link href="/perfil" onClick={onClose}
+            className="px-4 pt-5 pb-4 border-b border-sand dark:border-white/10 flex flex-col gap-2 hover:bg-sand/30 dark:hover:bg-white/5 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full flex items-center justify-center text-[15px] font-bold text-white flex-shrink-0"
+          <div className="w-11 h-11 rounded-full overflow-hidden flex items-center justify-center text-[15px] font-bold text-white flex-shrink-0"
                style={{ background: 'linear-gradient(135deg, #F07840, #E8652A)' }}>
-            {r.initials}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {avatarUrl ? <img src={avatarUrl} alt={r.name} className="w-full h-full object-cover" /> : r.initials}
           </div>
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-ink dark:text-white truncate">{r.name}</div>
@@ -83,7 +88,7 @@ export default function Sidebar({ role, effectiveAccess, unreadCount, onClose }:
           </div>
         </div>
         <RoleBadge role={role} />
-      </div>
+      </Link>
 
       {/* Nav principal */}
       <nav className="flex-1 px-3 py-3 flex flex-col gap-0.5 overflow-y-auto">
@@ -132,9 +137,9 @@ export default function Sidebar({ role, effectiveAccess, unreadCount, onClose }:
 
       {/* Nav secundária */}
       <div className="px-3 pb-3 border-t border-sand dark:border-white/10 pt-3 flex flex-col gap-0.5">
-        {SECONDARY.map(item => {
+        {SECONDARY_BASE.filter(item => !item.adminOnly || r.group === 'admin').map(item => {
           const Icon = item.icon
-          const active = pathname === item.href
+          const active = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
             <Link key={item.href} href={item.href}
                   onClick={onClose}
