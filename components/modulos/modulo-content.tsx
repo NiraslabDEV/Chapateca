@@ -44,11 +44,19 @@ export type FileItem = {
   createdAt: string
 }
 
+export type GrandSubFolderItem = {
+  id: string
+  name: string
+  totalCount: number
+  files: FileItem[]
+}
+
 export type SubFolderItem = {
   id: string
   name: string
   totalCount: number
   files: FileItem[]
+  children?: GrandSubFolderItem[]
 }
 
 export type FolderItem = {
@@ -121,8 +129,84 @@ function FileRow({
   )
 }
 
+function GrandSubFolderCard({
+  grand,
+  accentColor,
+  accentBg,
+  uploadHref,
+  onPreview,
+  onDeleteFile,
+  onDeleteFolder,
+}: {
+  grand: GrandSubFolderItem
+  accentColor: string
+  accentBg: string
+  uploadHref: string
+  onPreview: (f: FileItem) => void
+  onDeleteFile: (f: FileItem) => void
+  onDeleteFolder: (folder: { id: string; name: string }) => void
+}) {
+  const [open, setOpen] = useState(true)
+
+  return (
+    <div className="ml-5 mt-2 border border-sand-light/70 rounded-lg overflow-hidden">
+      <div
+        className="flex items-center justify-between px-3 py-2 border-b border-sand-light/70 cursor-pointer"
+        style={{ background: `${accentBg}60` }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <div className="flex items-center gap-1.5">
+          {open ? <ChevronDown size={12} style={{ color: accentColor }} /> : <ChevronRight size={12} style={{ color: accentColor }} />}
+          <FolderOpen size={13} style={{ color: accentColor }} />
+          <span className="text-[13px] font-medium" style={{ color: accentColor }}>{grand.name}</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-white/60" style={{ color: accentColor }}>
+            {grand.totalCount}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Link
+            href={`${uploadHref}?folder=${grand.id}`}
+            onClick={e => e.stopPropagation()}
+            style={{ color: accentColor, borderColor: `${accentColor}40` }}
+            className="flex items-center gap-1 px-2 py-0.5 border rounded-md text-[10px] font-semibold bg-white/60 hover:bg-white transition-colors"
+          >
+            <Upload size={10} /> Carregar
+          </Link>
+          <button
+            onClick={e => { e.stopPropagation(); onDeleteFolder({ id: grand.id, name: grand.name }) }}
+            title="Apagar sub-sub-pasta"
+            className="flex items-center px-1.5 py-0.5 border border-red-200 bg-white/60 rounded-md text-red-600 hover:border-red-400 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={10} />
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        grand.files.length > 0 ? (
+          <div className="divide-y divide-sand-light">
+            {grand.files.map(file => (
+              <FileRow key={file.id} file={file} accentColor={accentColor} onPreview={onPreview} onDelete={onDeleteFile} />
+            ))}
+            {grand.totalCount > 5 && (
+              <div className="px-6 py-2 flex items-center gap-1.5 text-[11px] text-ink-soft font-mono">
+                <Clock size={10} /> +{grand.totalCount - 5} documentos anteriores
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="px-6 py-3 text-center text-[12px] text-ink-soft">
+            Vazia — carrega o primeiro documento.
+          </div>
+        )
+      )}
+    </div>
+  )
+}
+
 function SubFolderCard({
   sub,
+  category,
   accentColor,
   accentBg,
   uploadHref,
@@ -131,12 +215,13 @@ function SubFolderCard({
   onDeleteFolder,
 }: {
   sub: SubFolderItem
+  category: DocCategory
   accentColor: string
   accentBg: string
   uploadHref: string
   onPreview: (f: FileItem) => void
   onDeleteFile: (f: FileItem) => void
-  onDeleteFolder: (folder: { id: string; name: string }) => void
+  onDeleteFolder: (folder: { id: string; name: string; isSub?: boolean }) => void
 }) {
   const [open, setOpen] = useState(true)
 
@@ -155,17 +240,17 @@ function SubFolderCard({
             {sub.totalCount} doc{sub.totalCount !== 1 ? 's' : ''}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+          <CriarPasta category={category} accentColor={accentColor} parentId={sub.id} label="Sub-pasta" />
           <Link
             href={`${uploadHref}?folder=${sub.id}`}
-            onClick={e => e.stopPropagation()}
             style={{ color: accentColor, borderColor: `${accentColor}40` }}
             className="flex items-center gap-1 px-2.5 py-1 border rounded-lg text-[11px] font-semibold bg-white/60 hover:bg-white transition-colors"
           >
             <Upload size={11} /> Carregar
           </Link>
           <button
-            onClick={e => { e.stopPropagation(); onDeleteFolder({ id: sub.id, name: sub.name }) }}
+            onClick={() => onDeleteFolder({ id: sub.id, name: sub.name, isSub: true })}
             title="Apagar sub-pasta"
             className="flex items-center px-2 py-1 border border-red-200 bg-white/60 rounded-lg text-red-600 hover:border-red-400 hover:bg-red-50 transition-colors"
           >
@@ -175,22 +260,43 @@ function SubFolderCard({
       </div>
 
       {open && (
-        sub.files.length > 0 ? (
-          <div className="divide-y divide-sand-light">
-            {sub.files.map(file => (
-              <FileRow key={file.id} file={file} accentColor={accentColor} onPreview={onPreview} onDelete={onDeleteFile} />
-            ))}
-            {sub.totalCount > 5 && (
-              <div className="px-6 py-2.5 flex items-center gap-1.5 text-xs text-ink-soft font-mono">
-                <Clock size={11} /> +{sub.totalCount - 5} documentos anteriores
+        <>
+          {sub.files.length > 0 ? (
+            <div className="divide-y divide-sand-light">
+              {sub.files.map(file => (
+                <FileRow key={file.id} file={file} accentColor={accentColor} onPreview={onPreview} onDelete={onDeleteFile} />
+              ))}
+              {sub.totalCount > 5 && (
+                <div className="px-6 py-2.5 flex items-center gap-1.5 text-xs text-ink-soft font-mono">
+                  <Clock size={11} /> +{sub.totalCount - 5} documentos anteriores
+                </div>
+              )}
+            </div>
+          ) : (
+            (sub.children ?? []).length === 0 && (
+              <div className="px-6 py-5 text-center text-sm text-ink-soft">
+                Sub-pasta vazia — carrega um documento ou cria uma sub-sub-pasta.
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="px-6 py-5 text-center text-sm text-ink-soft">
-            Sub-pasta vazia — carrega o primeiro documento.
-          </div>
-        )
+            )
+          )}
+
+          {(sub.children ?? []).length > 0 && (
+            <div className="px-3 py-2">
+              {sub.children!.map(grand => (
+                <GrandSubFolderCard
+                  key={grand.id}
+                  grand={grand}
+                  accentColor={accentColor}
+                  accentBg={accentBg}
+                  uploadHref={uploadHref}
+                  onPreview={onPreview}
+                  onDeleteFile={onDeleteFile}
+                  onDeleteFolder={(f) => onDeleteFolder({ ...f, isSub: true })}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   )
@@ -260,12 +366,13 @@ export default function ModuloContent({ category, folders, accentColor, accentBg
                     <SubFolderCard
                       key={sub.id}
                       sub={sub}
+                      category={category}
                       accentColor={accentColor}
                       accentBg={accentBg}
                       uploadHref={uploadHref}
                       onPreview={setSelectedFile}
                       onDeleteFile={setFileToDelete}
-                      onDeleteFolder={(f) => setFolderToDelete({ ...f, isSub: true })}
+                      onDeleteFolder={setFolderToDelete}
                     />
                   ))}
                 </div>

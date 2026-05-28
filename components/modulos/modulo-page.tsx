@@ -101,6 +101,17 @@ export default async function ModuloPage({
               orderBy: { createdAt: 'desc' },
               include: { uploadedBy: true },
             },
+            children: {
+              orderBy: { createdAt: 'asc' },
+              include: {
+                _count: { select: { files: true } },
+                files: {
+                  take: 5,
+                  orderBy: { createdAt: 'desc' },
+                  include: { uploadedBy: true },
+                },
+              },
+            },
           },
         },
       },
@@ -116,11 +127,23 @@ export default async function ModuloPage({
         name: c.name,
         totalCount: c._count.files,
         files: c.files.map(mapFile),
+        children: c.children.map(g => ({
+          id: g.id,
+          name: g.name,
+          totalCount: g._count.files,
+          files: g.files.map(mapFile),
+        })),
       })),
     }))
   } catch { /* DB não disponível */ }
 
-  const totalFiles = folders.reduce((a, f) => a + f.totalCount + (f.children ?? []).reduce((b, c) => b + c.totalCount, 0), 0)
+  const totalFiles = folders.reduce((acc, f) => {
+    const subTotal = (f.children ?? []).reduce((b, c) => {
+      const grandTotal = (c.children ?? []).reduce((d, g) => d + g.totalCount, 0)
+      return b + c.totalCount + grandTotal
+    }, 0)
+    return acc + f.totalCount + subTotal
+  }, 0)
 
   return (
     <div>

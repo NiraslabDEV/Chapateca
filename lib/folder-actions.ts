@@ -89,7 +89,12 @@ export async function deleteFolderAction(folderId: string): Promise<DeleteResult
       include: {
         files: { select: { id: true, googleDriveId: true } },
         children: {
-          include: { files: { select: { id: true, googleDriveId: true } } },
+          include: {
+            files: { select: { id: true, googleDriveId: true } },
+            children: {
+              include: { files: { select: { id: true, googleDriveId: true } } },
+            },
+          },
         },
       },
     })
@@ -100,18 +105,21 @@ export async function deleteFolderAction(folderId: string): Promise<DeleteResult
       return { ok: false, error: 'Sem permissão' }
     }
 
-    // Coleciona todos os ficheiros (raiz + sub-pastas) para apagar do Drive depois
+    // Coleciona TODOS os ficheiros (3 níveis) para apagar do Drive depois
+    const grandChildren = folder.children.flatMap(c => c.children)
     const allDriveIds: string[] = [
       ...folder.files.map(f => f.googleDriveId),
       ...folder.children.flatMap(c => c.files.map(f => f.googleDriveId)),
+      ...grandChildren.flatMap(g => g.files.map(f => f.googleDriveId)),
     ]
     const subFolderIds = folder.children.map(c => c.id)
+    const grandFolderIds = grandChildren.map(g => g.id)
+    const allFolderIds = [folderId, ...subFolderIds, ...grandFolderIds]
 
-    // 1. Apagar tudo da DB (ordem importante por FKs)
+    // 1. Apagar tudo da DB (ordem importante por FKs — netos primeiro, raiz por último)
     await prisma.$transaction([
-      prisma.fileLog.deleteMany({
-        where: { folderId: { in: [folderId, ...subFolderIds] } },
-      }),
+      prisma.fileLog.deleteMany({ where: { folderId: { in: allFolderIds } } }),
+      prisma.folder.deleteMany({ where: { id: { in: grandFolderIds } } }),
       prisma.folder.deleteMany({ where: { id: { in: subFolderIds } } }),
       prisma.folder.delete({ where: { id: folderId } }),
     ])
