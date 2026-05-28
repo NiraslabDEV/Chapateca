@@ -1,8 +1,9 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { getRoleFromCookie, ROLES } from '@/lib/roles'
+import { getRoleFromCookie, ROLES, type RoleKey } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
+import { getEffectiveAccess } from '@/lib/effective-access'
 import { BookOpen, Target, Wallet, Camera, Lock, ChevronRight, ImageIcon, CheckSquare, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -54,6 +55,7 @@ export default async function DashboardPage() {
   const role = getRoleFromCookie(store.get('chapateca-role')?.value)
   if (!role) redirect('/')
   const r = ROLES[role]
+  const access = await getEffectiveAccess(role as RoleKey)
 
   const hour = new Date().getHours()
   const greet = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
@@ -194,7 +196,7 @@ export default async function DashboardPage() {
       {/* Modules grid */}
       <div className="grid grid-cols-2 gap-5 mb-12">
         {MODULES.map(m => {
-          const locked = !r.access[m.key]
+          const locked = !access[m.key]
           const Icon = m.icon
           return (
             <Link key={m.href} href={locked ? '/acesso-negado' : m.href}

@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
-import { getRoleFromCookie, ROLES } from '@/lib/roles'
+import { getRoleFromCookie, ROLES, type RoleKey } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
+import { getEffectiveAccess } from '@/lib/effective-access'
 import { User, Shield, Users } from 'lucide-react'
 import UserManagement from '@/components/definicoes/user-management'
 
@@ -15,6 +16,11 @@ export default async function DefinicoesPage() {
   const roleKey = getRoleFromCookie(store.get('chapateca-role')?.value)
   const role = roleKey ? ROLES[roleKey] : null
   const isAdmin = role?.group === 'admin'
+
+  // Acesso efectivo do utilizador actual (respeitando overrides da admin na DB)
+  const myAccess = roleKey
+    ? await getEffectiveAccess(roleKey as RoleKey)
+    : { galeria: false, manuais: false, estrategia: false, financas: false }
 
   // Para admins: busca estado de todos os utilizadores na DB
   type UserRow = {
@@ -88,7 +94,7 @@ export default async function DefinicoesPage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {role && (Object.entries(MODULE_LABELS) as [Module, string][]).map(([mod, label]) => {
-              const allowed = role.access[mod]
+              const allowed = myAccess[mod]
               return (
                 <div key={mod} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${allowed ? 'bg-forest/8 text-forest' : 'bg-sand-light text-ink-soft'}`}>
                   <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${allowed ? 'bg-forest' : 'bg-sand'}`} />

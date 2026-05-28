@@ -1,36 +1,12 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getRoleFromCookie, ROLES } from '@/lib/roles'
+import { getRoleFromCookie, ROLES, type RoleKey } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
+import { getEffectiveAccess, type EffectiveAccess } from '@/lib/effective-access'
 import PortalLayoutClient from '@/components/layout/portal-layout-client'
 import type { PendingTask } from '@/components/tarefas/task-popup'
 
-export type EffectiveAccess = {
-  galeria: boolean
-  manuais: boolean
-  estrategia: boolean
-  financas: boolean
-}
-
-async function getEffectiveAccess(roleKey: string): Promise<EffectiveAccess> {
-  const r = ROLES[roleKey as keyof typeof ROLES]
-  const defaults = r.access
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email: r.email },
-      select: { accessGaleria: true, accessManuais: true, accessEstrategia: true, accessFinancas: true },
-    })
-    if (!user) return defaults
-    return {
-      galeria:    user.accessGaleria    ?? defaults.galeria,
-      manuais:    user.accessManuais    ?? defaults.manuais,
-      estrategia: user.accessEstrategia ?? defaults.estrategia,
-      financas:   user.accessFinancas   ?? defaults.financas,
-    }
-  } catch {
-    return defaults
-  }
-}
+export type { EffectiveAccess }
 
 async function getPendingTask(email: string): Promise<{ task: PendingTask | null; unreadCount: number }> {
   try {
@@ -86,7 +62,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
   const r = ROLES[role]
   const [effectiveAccess, { task: pendingTask, unreadCount }] = await Promise.all([
-    getEffectiveAccess(role),
+    getEffectiveAccess(role as RoleKey),
     getPendingTask(r.email),
   ])
 
