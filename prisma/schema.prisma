@@ -47,15 +47,32 @@ model Folder {
 }
 
 model Task {
-  id        String    @id @default(cuid())
-  fromEmail String
-  toEmail   String
-  title     String
-  body      String?
-  status    String    @default("pending") // pending | received | done
-  readAt    DateTime?
-  doneAt    DateTime?
-  createdAt DateTime  @default(now())
+  id            String         @id @default(cuid())
+  fromEmail     String
+  toEmail       String
+  title         String
+  body          String?
+  status        String         @default("pending") // pending | received | done
+  readAt        DateTime?
+  doneAt        DateTime?
+  lastMessageAt DateTime?      // actualizado quando uma nova msg entra
+  createdAt     DateTime       @default(now())
+  messages      TaskMessage[]
+
+  @@index([toEmail, status])
+  @@index([fromEmail])
+}
+
+model TaskMessage {
+  id         String   @id @default(cuid())
+  taskId     String
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fromEmail  String
+  body       String
+  readByPeer Boolean  @default(false)  // a outra parte já leu?
+  createdAt  DateTime @default(now())
+
+  @@index([taskId, createdAt])
 }
 
 // Audit log de acções importantes (deleções, etc.) — alimenta o feed do Dashboard.

@@ -34,13 +34,30 @@ async function getEffectiveAccess(roleKey: string): Promise<EffectiveAccess> {
 
 async function getPendingTask(email: string): Promise<{ task: PendingTask | null; unreadCount: number }> {
   try {
-    const tasks = await prisma.task.findMany({
+    // 1. Tarefas com status pending (nunca abertas)
+    const pendingTasks = await prisma.task.findMany({
       where:   { toEmail: email, status: 'pending' },
       orderBy: { createdAt: 'asc' },
     })
-    if (tasks.length === 0) return { task: null, unreadCount: 0 }
 
-    const first = tasks[0]
+    // 2. Mensagens novas em tarefas já recebidas (na inbox OU em tarefas que enviei)
+    const unreadMessages = await prisma.taskMessage.count({
+      where: {
+        readByPeer: false,
+        fromEmail: { not: email },
+        task: {
+          OR: [{ toEmail: email }, { fromEmail: email }],
+        },
+      },
+    })
+
+    const totalUnread = pendingTasks.length + unreadMessages
+
+    if (pendingTasks.length === 0) {
+      return { task: null, unreadCount: totalUnread }
+    }
+
+    const first = pendingTasks[0]
     const sender = Object.values(ROLES).find(r => r.email === first.fromEmail)
 
     return {
@@ -53,9 +70,9 @@ async function getPendingTask(email: string): Promise<{ task: PendingTask | null
         title:        first.title,
         body:         first.body,
         createdAt:    first.createdAt.toISOString(),
-        pendingCount: tasks.length,
+        pendingCount: pendingTasks.length,
       },
-      unreadCount: tasks.length,
+      unreadCount: totalUnread,
     }
   } catch {
     return { task: null, unreadCount: 0 }
