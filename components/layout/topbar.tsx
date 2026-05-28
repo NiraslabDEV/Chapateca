@@ -2,8 +2,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bell, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import RoleBadge from '@/components/ui/role-badge'
+import NotificationsBell from './notifications-bell'
 import { ROLES, type RoleKey } from '@/lib/roles'
 
 interface TopbarProps {
@@ -56,19 +57,8 @@ export default function Topbar({ role, crumbs = [], unreadCount = 0, onMenuClick
       )}
 
       <div className="ml-auto flex items-center gap-3">
-        {/* Notificações — sino com badge de tarefas pendentes */}
-        <Link
-          href="/tarefas"
-          aria-label={unreadCount > 0 ? `${unreadCount} tarefa${unreadCount !== 1 ? 's' : ''} por ver` : 'Tarefas'}
-          className="relative w-9 h-9 rounded-full flex items-center justify-center text-white/80 hover:bg-white/10 transition-colors"
-        >
-          <Bell size={20} />
-          {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-gold rounded-full text-[9px] font-bold text-white flex items-center justify-center border-2 border-forest">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </Link>
+        {/* Notificações — dropdown funcional */}
+        <NotificationsBell initialUnreadCount={unreadCount} />
 
         {/* Avatar pill */}
         <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 cursor-pointer hover:bg-white/15 transition-colors">
