@@ -2,10 +2,9 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, Check, ArrowLeft, ArrowRight, MapPin, Calendar, Image } from 'lucide-react'
+import { Upload, Check, ArrowLeft, ArrowRight, MapPin, Calendar, Image, Briefcase } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const LOCATIONS = ['Malhangalene', 'Polana Caniço A', 'Polana Caniço B', 'Maxaquene', 'Chamanculo', 'Sede Chapateca', 'Outro']
+import { LOCATIONS, PROJECT_NAMES } from '@/lib/galeria-options'
 
 const STEPS = ['Seleccionar', 'Detalhes', 'Upload']
 
@@ -21,7 +20,9 @@ export default function UploadPage() {
   const [step, setStep] = useState(1)
   const [files, setFiles] = useState<File[]>([])
   const [location, setLocation] = useState('')
+  const [locationCustom, setLocationCustom] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [projectChoice, setProjectChoice] = useState('')
   const [activityName, setActivityName] = useState('')
   const [activityType, setActivityType] = useState('')
   const [participants, setParticipants] = useState('')
@@ -31,20 +32,26 @@ export default function UploadPage() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Para envio: usa o nome livre se "OUTROS"; senão usa a escolha do dropdown
+  const finalProjectName = projectChoice === 'OUTROS' ? activityName.trim() : projectChoice
+  // Localização: idem
+  const finalLocation = location === 'Outro' ? locationCustom.trim() : location
+  const canSubmit = files.length > 0 && finalLocation && finalProjectName && !uploading
+
   const handleFiles = (picked: FileList | null) => {
     if (picked) setFiles(Array.from(picked))
   }
 
   const handleUpload = async () => {
-    if (!files.length || !location) return
+    if (!canSubmit) return
     setUploading(true)
     setUploadError(null)
     try {
       const fd = new FormData()
       files.forEach(f => fd.append('files', f))
-      fd.append('location', location)
+      fd.append('location', finalLocation)
       fd.append('activityDate', date)
-      fd.append('activityName', activityName)
+      fd.append('activityName', finalProjectName)
       fd.append('activityType', activityType)
       fd.append('participants', participants)
       fd.append('observations', observations)
@@ -169,10 +176,20 @@ export default function UploadPage() {
                   <select value={location} onChange={e => setLocation(e.target.value)}
                           className="w-full pl-9 pr-4 py-2.5 border border-sand rounded-xl text-sm bg-white appearance-none
                                      focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none">
-                    <option value="">Seleccionar bairro...</option>
+                    <option value="">Seleccionar local...</option>
                     {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
+                {location === 'Outro' && (
+                  <input
+                    type="text"
+                    value={locationCustom}
+                    onChange={e => setLocationCustom(e.target.value)}
+                    placeholder="Especifica o local..."
+                    autoFocus
+                    className="mt-2 w-full px-4 py-2.5 border border-sand rounded-xl text-sm focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none"
+                  />
+                )}
               </div>
 
               <div>
@@ -189,11 +206,27 @@ export default function UploadPage() {
 
               <div>
                 <label className="block text-[12px] font-semibold text-ink uppercase tracking-[0.06em] mb-1.5">
-                  Nome do Projecto
+                  Nome do Projecto <span className="text-red-500">*</span>
                 </label>
-                <input type="text" value={activityName} onChange={e => setActivityName(e.target.value)}
-                       placeholder="Ex: Distribuição de livros, Formação de voluntários..."
-                       className="w-full px-4 py-2.5 border border-sand rounded-xl text-sm focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none" />
+                <div className="relative">
+                  <Briefcase size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft" />
+                  <select value={projectChoice} onChange={e => setProjectChoice(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 border border-sand rounded-xl text-sm bg-white appearance-none
+                                     focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none">
+                    <option value="">Seleccionar projecto...</option>
+                    {PROJECT_NAMES.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                {projectChoice === 'OUTROS' && (
+                  <input
+                    type="text"
+                    value={activityName}
+                    onChange={e => setActivityName(e.target.value)}
+                    placeholder="Nome do projecto..."
+                    autoFocus
+                    className="mt-2 w-full px-4 py-2.5 border border-sand rounded-xl text-sm focus:border-forest focus:ring-2 focus:ring-forest/8 outline-none"
+                  />
+                )}
                 <p className="text-[11px] text-ink-soft mt-1.5 font-mono">Aparece como título do álbum na Galeria</p>
               </div>
 
@@ -247,7 +280,7 @@ export default function UploadPage() {
                       className="flex-1 py-3 border border-sand rounded-xl text-sm text-ink-mid hover:bg-parchment-2 transition-colors">
                 ← Voltar
               </button>
-              <button onClick={handleUpload} disabled={!location || uploading}
+              <button onClick={handleUpload} disabled={!canSubmit}
                       className="flex-[2] py-3 bg-forest text-white rounded-xl text-sm font-semibold disabled:opacity-50 hover:bg-forest-mid transition-colors flex items-center justify-center gap-2">
                 {uploading ? 'A enviar...' : <>Fazer Upload <Upload size={16} /></>}
               </button>
@@ -288,7 +321,7 @@ export default function UploadPage() {
                       className="w-full py-3.5 bg-gold text-forest font-bold text-sm rounded-full shadow-gold hover:-translate-y-0.5 transition-all">
                 Ver na Galeria
               </button>
-              <button onClick={() => { setStep(1); setFiles([]); setLocation(''); setActivityName(''); setActivityType(''); setParticipants(''); setObservations(''); }}
+              <button onClick={() => { setStep(1); setFiles([]); setLocation(''); setLocationCustom(''); setProjectChoice(''); setActivityName(''); setActivityType(''); setParticipants(''); setObservations(''); }}
                       className="w-full py-3 border border-sand rounded-xl text-sm text-ink-mid hover:bg-parchment-2 transition-colors">
                 Carregar mais fotos
               </button>
