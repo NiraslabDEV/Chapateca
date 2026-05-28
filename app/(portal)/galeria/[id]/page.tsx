@@ -49,6 +49,7 @@ export default async function AlbumPage({
     activityType: string | null
     participants: number | null
     observations: string | null
+    isPublic: boolean
   }
   let albumInfo: AlbumInfo | null = null
   let files: { id: string; fileName: string; googleDriveId: string; mimeType: string }[] = []
@@ -73,6 +74,7 @@ export default async function AlbumPage({
           activityType: album.activityType,
           participants: album.participants,
           observations: album.observations,
+          isPublic: album.isPublic,
         }
         files = album.photos.map(f => ({
           id: f.id,
@@ -105,6 +107,7 @@ export default async function AlbumPage({
           activityType: null,
           participants: null,
           observations: null,
+          isPublic: true,
         }
 
         files = related.map(f => ({
@@ -131,6 +134,7 @@ export default async function AlbumPage({
       activityType: null,
       participants: null,
       observations: null,
+      isPublic: true,
     }
     files = MOCK_FILES
   }
@@ -153,7 +157,7 @@ export default async function AlbumPage({
             <span>{files.length} foto{files.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
-        {!isMock && <AlbumActions albumId={id} canDelete={isAdmin} onDeleteRedirect="/galeria" />}
+        {!isMock && <AlbumActions albumId={id} canDelete={isAdmin} isPublic={albumInfo.isPublic} onDeleteRedirect="/galeria" />}
       </div>
 
       {/* Grid */}

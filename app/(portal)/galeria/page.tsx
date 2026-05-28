@@ -73,6 +73,7 @@ export default async function GaleriaPage({
     id: string; title: string; location: string; activityDate: Date
     count: number; uploaderName: string; uploaderInitials: string
     activityType: string | null; participants: number | null
+    isPublic: boolean
   }
 
   let albums: AlbumEntry[] = []
@@ -95,6 +96,7 @@ export default async function GaleriaPage({
         uploaderInitials: (a.uploadedBy?.name ?? 'EQ').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase(),
         activityType: a.activityType,
         participants: a.participants,
+        isPublic: a.isPublic,
       }))
     } catch { /* DB indisponível */ }
   }
@@ -272,7 +274,7 @@ export default async function GaleriaPage({
                           {album.uploaderName}
                         </div>
                       </div>
-                      <AlbumActions albumId={album.id} canDelete={isAdmin} />
+                      <AlbumActions albumId={album.id} canDelete={isAdmin} isPublic={album.isPublic} />
                     </div>
                   ))}
                 </div>

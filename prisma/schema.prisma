@@ -79,6 +79,7 @@ model Album {
   participants Int?
   observations String?
   shareToken   String?   @unique
+  isPublic     Boolean   @default(true)
   uploadedById String
   uploadedBy   User      @relation(fields: [uploadedById], references: [id])
   createdAt    DateTime  @default(now())

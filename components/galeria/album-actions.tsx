@@ -2,31 +2,45 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { generateShareToken, deleteAlbumAction } from '@/app/(portal)/galeria/actions'
-import { Share2, Eye, Check, Loader2, Trash2, AlertTriangle, X } from 'lucide-react'
+import { generateShareToken, deleteAlbumAction, toggleAlbumPublicAction } from '@/app/(portal)/galeria/actions'
+import { Share2, Eye, Check, Loader2, Trash2, AlertTriangle, X, Globe, Lock } from 'lucide-react'
 import Link from 'next/link'
 
 interface Props {
   albumId: string
   canDelete?: boolean   // só admins
+  isPublic?: boolean    // estado inicial
   onDeleteRedirect?: string // p/ ex. '/galeria' quando estamos dentro do álbum
 }
 
-export default function AlbumActions({ albumId, canDelete = false, onDeleteRedirect }: Props) {
+export default function AlbumActions({ albumId, canDelete = false, isPublic = true, onDeleteRedirect }: Props) {
   const router = useRouter()
   const [copied, setCopied]     = useState(false)
   const [confirming, setConfirm] = useState(false)
   const [deleteErr, setDeleteErr] = useState<string | null>(null)
   const [shareLoading, startShare]   = useTransition()
   const [deleteLoading, startDelete] = useTransition()
+  const [togglePending, startToggle] = useTransition()
+  const [localPublic, setLocalPublic] = useState(isPublic)
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const next = !localPublic
+    setLocalPublic(next)
+    startToggle(async () => {
+      const res = await toggleAlbumPublicAction(albumId, next)
+      if (!res.ok) setLocalPublic(!next) // reverter
+      else router.refresh()
+    })
+  }
 
   const handleShare = () => {
     startShare(async () => {
-      const token = await generateShareToken(albumId)
-      if (token) {
-        const url = `${window.location.origin}/album/${token}`
-        try { await navigator.clipboard.writeText(url) } catch { /* ignore */ }
-      }
+      const url = `${window.location.origin}/projetos/${albumId}`
+      try { await navigator.clipboard.writeText(url) } catch { /* ignore */ }
+      // mantém fallback: gera token legado para links antigos
+      await generateShareToken(albumId).catch(() => null)
       setCopied(true)
       setTimeout(() => setCopied(false), 2500)
     })
@@ -49,6 +63,25 @@ export default function AlbumActions({ albumId, canDelete = false, onDeleteRedir
   return (
     <>
       <div className="flex gap-2 flex-shrink-0">
+        <button
+          onClick={handleToggle}
+          disabled={togglePending}
+          title={localPublic ? 'Visível em /projetos' : 'Privado — só visível no portal'}
+          className={[
+            'flex items-center gap-1.5 px-3 py-2 border rounded-lg text-[12px] font-medium transition-colors disabled:opacity-60',
+            localPublic
+              ? 'border-green-200 bg-green-50 text-green-700 hover:border-green-400'
+              : 'border-sand text-ink-soft hover:border-ink-soft hover:text-ink',
+          ].join(' ')}>
+          {togglePending ? (
+            <Loader2 size={13} className="animate-spin" />
+          ) : localPublic ? (
+            <Globe size={13} />
+          ) : (
+            <Lock size={13} />
+          )}
+          {localPublic ? 'Público' : 'Privado'}
+        </button>
         <button
           onClick={handleShare}
           disabled={shareLoading}

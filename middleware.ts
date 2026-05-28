@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
   const roleCookie = request.cookies.get('chapateca-role')?.value
   const role = getRoleFromCookie(roleCookie)
 
-  if (PUBLIC_PATHS.includes(pathname) || pathname.startsWith('/album/')) return NextResponse.next()
+  if (PUBLIC_PATHS.includes(pathname) || pathname.startsWith('/album/') || pathname === '/projetos' || pathname.startsWith('/projetos/')) return NextResponse.next()
 
   // /definir-senha e /esqueci-senha passam se tiverem cookie
   if (AUTH_ONLY_PATHS.includes(pathname)) {

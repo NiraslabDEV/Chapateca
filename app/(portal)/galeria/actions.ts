@@ -6,6 +6,22 @@ import { prisma } from '@/lib/prisma'
 import { deleteFileFromDrive } from '@/lib/google-drive'
 import { randomBytes } from 'crypto'
 
+/** Liga/desliga visibilidade pública do álbum na página /projetos. */
+export async function toggleAlbumPublicAction(albumId: string, isPublic: boolean): Promise<{ ok: boolean; error?: string }> {
+  const store = await cookies()
+  const roleKey = getRoleFromCookie(store.get('chapateca-role')?.value)
+  if (!roleKey) return { ok: false, error: 'Não autenticado' }
+  try {
+    await prisma.album.update({ where: { id: albumId }, data: { isPublic } })
+    revalidatePath('/galeria')
+    revalidatePath('/projetos')
+    revalidatePath(`/projetos/${albumId}`)
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: (err as Error).message }
+  }
+}
+
 export async function generateShareToken(albumId: string): Promise<string | null> {
   const store = await cookies()
   const roleKey = getRoleFromCookie(store.get('chapateca-role')?.value)
