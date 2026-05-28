@@ -85,6 +85,69 @@
 
 ## 💡 Horizonte 2 — 6 a 18 meses
 
+### 💰 Rastreamento de Frota (venda separada à Constance)
+**Estado:** especificado, não construído. A vender como módulo extra — não está no escopo do contrato actual.
+
+**O conceito:** motoristas activam partilha de localização no portal, Constance vê em tempo quase-real onde está cada veículo da Chapateca. Aproveita o mesmo portal sem hardware extra.
+
+**Como funciona:**
+- Motorista activa "Estou ao volante" no portal → GPS captado a cada 15 min automaticamente
+- Constance vê mapa central com pins por motorista + última actualização
+- Botão **"Pedir actualização"** ao lado de cada motorista → força captura imediata (~15 seg de latência via polling do telemóvel do motorista)
+- Bateria preservada: 4 leituras/hora consomem só ~5-8%/hora
+
+**Limitações honestas:**
+- Browser-only: só funciona enquanto a página estiver aberta no telemóvel do motorista
+- Sem rede em zonas remotas = sem actualização (mas última posição conhecida fica visível)
+- Para tracking 24/7 verdadeiro precisa de hardware GPS dedicado (próximo passo se a Chapateca crescer)
+
+**Schema previsto:**
+```prisma
+model VehicleSession {
+  id            String   @id @default(cuid())
+  motoristEmail String
+  isActive      Boolean  @default(true)
+  startedAt     DateTime @default(now())
+  endedAt       DateTime?
+  locations     VehicleLocation[]
+}
+
+model VehicleLocation {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   VehicleSession @relation(fields: [sessionId], references: [id])
+  lat       Float
+  lng       Float
+  accuracy  Float?   // metros
+  isManualRequest Boolean @default(false)
+  capturedAt DateTime @default(now())
+  @@index([sessionId, capturedAt])
+}
+
+model LocationRequest {
+  id              String   @id @default(cuid())
+  motoristEmail   String
+  requestedBy     String
+  requestedAt     DateTime @default(now())
+  fulfilledAt     DateTime?
+  @@index([motoristEmail, fulfilledAt])
+}
+```
+
+**Componentes a construir:**
+1. `/frota/conduzir` — página do motorista com toggle "Estou ao volante" + PWA
+2. `/frota` — mapa Leaflet + OSM (gratuito) com pins por motorista
+3. API: `POST /api/frota/posicao`, `GET /api/frota/pedido-pendente`, `POST /api/frota/pedir-refresh`
+4. Histórico de rotas do dia (timeline visual)
+
+**Custo de construção:** ~1 semana de trabalho focado
+**Custo operacional adicional:** zero (Leaflet + OSM são gratuitos, sem API key)
+**Valor para a Chapateca:** alto — substitui sistemas comerciais de gestão de frota que custam 50-150 USD/mês
+
+**Pricing sugerido:** projecto único 25-40 mil MZN + 2-3 mil MZN/mês de manutenção, ou incluído num upgrade de honorários para 18 mil MZN/mês (vê [ANALISE-CUSTOS-ESCALA.md](ANALISE-CUSTOS-ESCALA.md))
+
+---
+
 ### Portal do Doador
 - Cada patrocinador tem login próprio
 - Vê em tempo real onde o dinheiro dele está a ser usado
