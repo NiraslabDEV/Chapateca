@@ -1,6 +1,15 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { DM_Sans, DM_Serif_Display, DM_Mono } from 'next/font/google'
 import './globals.css'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  // Permitimos user-scaling para acessibilidade. O fix anti-zoom nos inputs
+  // é feito em CSS (font-size: 16px em mobile) — não restringindo o zoom global.
+  maximumScale: 5,
+  userScalable: true,
+}
 
 const dmSans = DM_Sans({
   subsets: ['latin'],

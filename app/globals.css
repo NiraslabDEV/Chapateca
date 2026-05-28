@@ -48,6 +48,18 @@
   ::selection {
     background: #E8652A33;
   }
+
+  /* ── Fix do zoom automático no iOS ──
+     iOS Safari faz zoom-in sempre que se foca num input com font-size < 16px.
+     Forçamos 16px em mobile para evitar esse zoom irritante; o visual quase
+     não muda porque a escala já é proporcional ao resto. */
+  @media (max-width: 768px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
 }
 
 @layer utilities {
