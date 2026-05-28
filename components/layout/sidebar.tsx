@@ -91,6 +91,7 @@ export default function Sidebar({ role, effectiveAccess, unreadCount, onClose }:
           const locked = item.key !== null && !effectiveAccess[item.key]
           const active = pathname.startsWith(item.href)
           const Icon = item.icon
+          const isTarefas = item.href === '/tarefas'
           return (
             <Link key={item.href} href={locked ? '/acesso-negado' : item.href}
                   onClick={onClose}
@@ -105,12 +106,22 @@ export default function Sidebar({ role, effectiveAccess, unreadCount, onClose }:
                     locked
                       ? 'text-ink-soft opacity-50 cursor-not-allowed pointer-events-none dark:text-white/30'
                       : '',
+                    // Brilho roxo especial para o item Tarefas (excepto quando activo, que já tem fundo verde)
+                    isTarefas && !active ? 'tarefas-glow' : '',
                   )}>
-              <Icon size={18} className={active && !locked ? 'text-gold' : ''} />
-              <span className="flex-1">{item.label}</span>
+              <Icon
+                size={18}
+                className={cn(
+                  active && !locked ? 'text-gold' : '',
+                  isTarefas && !active ? 'tarefas-icon-glow' : '',
+                )}
+              />
+              <span className={cn('flex-1', isTarefas && !active ? 'text-[#461882] dark:text-[#a78bfa] font-semibold' : '')}>
+                {item.label}
+              </span>
               {locked && <Lock size={12} className="text-ink-soft" />}
-              {item.href === '/tarefas' && unreadCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-[#461882] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+              {isTarefas && unreadCount > 0 && (
+                <span className="w-5 h-5 rounded-full bg-[#461882] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 shadow-[0_0_12px_rgba(70,24,130,0.6)]">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
