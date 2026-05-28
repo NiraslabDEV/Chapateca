@@ -82,6 +82,7 @@ export default function TaskChat({ taskId, me, peer, messages, initialBody, init
   const [isPending, startTransition] = useTransition()
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>(messages)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const inputBarRef = useRef<HTMLDivElement>(null)
 
   // Sync server-side updates into local state
   useEffect(() => { setLocalMessages(messages) }, [messages])
@@ -90,6 +91,14 @@ export default function TaskChat({ taskId, me, peer, messages, initialBody, init
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [localMessages.length])
+
+  // Quando o utilizador começa a escrever, ancora o input ao fundo do viewport
+  // (resolve o problema mobile do card subir para o meio quando o teclado abre)
+  const handleFocus = () => {
+    setTimeout(() => {
+      inputBarRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' })
+    }, 280)
+  }
 
   const handleSend = () => {
     const text = draft.trim()
@@ -163,13 +172,14 @@ export default function TaskChat({ taskId, me, peer, messages, initialBody, init
       </div>
 
       {/* Input */}
-      <div className="border-t border-[#461882]/15 bg-white p-3 flex-shrink-0 shadow-[0_-2px_8px_rgba(70,24,130,0.04)]">
+      <div ref={inputBarRef} className="border-t border-[#461882]/15 bg-white p-3 flex-shrink-0 shadow-[0_-2px_8px_rgba(70,24,130,0.04)]">
         {error && <p className="text-[11px] text-red-600 mb-2 px-1">{error}</p>}
         <div className="flex gap-2 items-end">
           <textarea
             value={draft}
             onChange={e => setDraft(e.target.value)}
             onKeyDown={handleKey}
+            onFocus={handleFocus}
             placeholder="Escrever resposta..."
             rows={1}
             className="flex-1 resize-none px-3 py-2 border border-sand rounded-xl text-sm outline-none focus:border-[#461882] transition-colors max-h-32"
