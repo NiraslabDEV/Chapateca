@@ -47,7 +47,7 @@ export async function adminSetPassword(email: string, newPassword: string) {
 // Actualiza acesso a um módulo para um utilizador
 export async function updateUserAccess(
   email: string,
-  module: 'galeria' | 'manuais' | 'estrategia' | 'financas',
+  module: 'galeria' | 'manuais' | 'estrategia' | 'financas' | 'direcao' | 'rh' | 'eventos' | 'cocoPro',
   value: boolean
 ) {
   await requireAdmin()
@@ -59,6 +59,10 @@ export async function updateUserAccess(
     manuais:    'accessManuais',
     estrategia: 'accessEstrategia',
     financas:   'accessFinancas',
+    direcao:    'accessDirecao',
+    rh:         'accessRH',
+    eventos:    'accessEventos',
+    cocoPro:    'accessCocoPro',
   }[module]
 
   await prisma.user.upsert({

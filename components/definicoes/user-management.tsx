@@ -4,13 +4,17 @@ import { useState, useTransition } from 'react'
 import { forcePasswordReset, adminSetPassword, updateUserAccess } from '@/app/(portal)/definicoes/actions'
 import { KeyRound, RefreshCw, Check, Loader2, ShieldCheck, ShieldOff } from 'lucide-react'
 
-type Module = 'galeria' | 'manuais' | 'estrategia' | 'financas'
+type Module = 'galeria' | 'manuais' | 'estrategia' | 'financas' | 'direcao' | 'rh' | 'eventos' | 'cocoPro'
 
 const MODULE_LABELS: Record<Module, string> = {
   galeria:    'Galeria',
-  manuais:    'Manuais',
-  estrategia: 'Estratégia',
-  financas:   'Financeiro',
+  manuais:    'Procedimentos',
+  estrategia: 'Estratégia Fin.',
+  financas:   'Contabilidade',
+  direcao:    'Direção',
+  rh:         'RH',
+  eventos:    'Eventos',
+  cocoPro:    'Coco PRO',
 }
 
 interface UserRow {

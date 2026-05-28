@@ -5,10 +5,17 @@ import { getEffectiveAccess } from '@/lib/effective-access'
 import { User, Shield, Users } from 'lucide-react'
 import UserManagement from '@/components/definicoes/user-management'
 
-type Module = 'galeria' | 'manuais' | 'estrategia' | 'financas'
+type Module = 'galeria' | 'manuais' | 'estrategia' | 'financas' | 'direcao' | 'rh' | 'eventos' | 'cocoPro'
 
 const MODULE_LABELS: Record<Module, string> = {
-  galeria: 'Galeria', manuais: 'Manuais', estrategia: 'Estratégia', financas: 'Financeiro',
+  galeria:    'Galeria',
+  manuais:    'Procedimentos',
+  estrategia: 'Estratégia Financeira',
+  financas:   'Contabilidade',
+  direcao:    'Direção',
+  rh:         'RH',
+  eventos:    'Eventos',
+  cocoPro:    'Coco PRO',
 }
 
 export default async function DefinicoesPage() {
@@ -18,9 +25,9 @@ export default async function DefinicoesPage() {
   const isAdmin = role?.group === 'admin'
 
   // Acesso efectivo do utilizador actual (respeitando overrides da admin na DB)
-  const myAccess = roleKey
+  const myAccess: Record<Module, boolean> = roleKey
     ? await getEffectiveAccess(roleKey as RoleKey)
-    : { galeria: false, manuais: false, estrategia: false, financas: false }
+    : { galeria: false, manuais: false, estrategia: false, financas: false, direcao: false, rh: false, eventos: false, cocoPro: false }
 
   // Para admins: busca estado de todos os utilizadores na DB
   type UserRow = {
@@ -32,10 +39,18 @@ export default async function DefinicoesPage() {
   let allUsers: UserRow[] = []
 
   if (isAdmin) {
-    let dbUsers: { email: string; passwordHash: string | null; mustResetPassword: boolean; accessGaleria: boolean | null; accessManuais: boolean | null; accessEstrategia: boolean | null; accessFinancas: boolean | null }[] = []
+    let dbUsers: { email: string; passwordHash: string | null; mustResetPassword: boolean;
+      accessGaleria: boolean | null; accessManuais: boolean | null;
+      accessEstrategia: boolean | null; accessFinancas: boolean | null;
+      accessDirecao: boolean | null; accessRH: boolean | null;
+      accessEventos: boolean | null; accessCocoPro: boolean | null }[] = []
     try {
       dbUsers = await prisma.user.findMany({
-        select: { email: true, passwordHash: true, mustResetPassword: true, accessGaleria: true, accessManuais: true, accessEstrategia: true, accessFinancas: true },
+        select: {
+          email: true, passwordHash: true, mustResetPassword: true,
+          accessGaleria: true, accessManuais: true, accessEstrategia: true, accessFinancas: true,
+          accessDirecao: true, accessRH: true, accessEventos: true, accessCocoPro: true,
+        },
       })
     } catch { /* DB não disponível */ }
 
@@ -51,6 +66,10 @@ export default async function DefinicoesPage() {
           manuais:    db?.accessManuais    ?? r.access.manuais,
           estrategia: db?.accessEstrategia ?? r.access.estrategia,
           financas:   db?.accessFinancas   ?? r.access.financas,
+          direcao:    db?.accessDirecao    ?? r.access.direcao,
+          rh:         db?.accessRH         ?? r.access.rh,
+          eventos:    db?.accessEventos    ?? r.access.eventos,
+          cocoPro:    db?.accessCocoPro    ?? r.access.cocoPro,
         },
         hasPassword: !!db?.passwordHash,
         mustReset:   db?.mustResetPassword ?? false,

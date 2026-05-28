@@ -3,26 +3,37 @@ import { cookies } from 'next/headers'
 import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
 
-const VALID_CATEGORIES = ['FINANCEIRO', 'MANUAIS', 'ESTRATEGIA'] as const
+const VALID_CATEGORIES = ['FINANCEIRO', 'MANUAIS', 'ESTRATEGIA', 'DIRECAO', 'RH', 'EVENTOS', 'COCO_PRO'] as const
 type DocCategory = (typeof VALID_CATEGORIES)[number]
+
+const CATEGORY_TO_MODULE: Record<DocCategory, keyof typeof ROLES[keyof typeof ROLES]['access']> = {
+  FINANCEIRO: 'financas', MANUAIS: 'manuais', ESTRATEGIA: 'estrategia',
+  DIRECAO: 'direcao', RH: 'rh', EVENTOS: 'eventos', COCO_PRO: 'cocoPro',
+}
 
 async function hasAccess(category: DocCategory, role: keyof typeof ROLES) {
   const r = ROLES[role]
-  const staticAccess =
-    category === 'FINANCEIRO' ? r.access.financas
-    : category === 'MANUAIS'    ? r.access.manuais
-    :                             r.access.estrategia
+  const moduleKey = CATEGORY_TO_MODULE[category]
+  const staticAccess = r.access[moduleKey]
 
   try {
     const u = await prisma.user.findUnique({
       where: { email: r.email },
-      select: { accessFinancas: true, accessManuais: true, accessEstrategia: true },
+      select: {
+        accessFinancas: true, accessManuais: true, accessEstrategia: true,
+        accessDirecao: true, accessRH: true, accessEventos: true, accessCocoPro: true,
+      },
     })
     if (!u) return staticAccess
     const dbValue =
-      category === 'FINANCEIRO' ? u.accessFinancas
-      : category === 'MANUAIS'    ? u.accessManuais
-      :                             u.accessEstrategia
+      moduleKey === 'financas'   ? u.accessFinancas
+      : moduleKey === 'manuais'    ? u.accessManuais
+      : moduleKey === 'estrategia' ? u.accessEstrategia
+      : moduleKey === 'direcao'    ? u.accessDirecao
+      : moduleKey === 'rh'         ? u.accessRH
+      : moduleKey === 'eventos'    ? u.accessEventos
+      : moduleKey === 'cocoPro'    ? u.accessCocoPro
+      : null
     return dbValue ?? staticAccess
   } catch {
     return staticAccess

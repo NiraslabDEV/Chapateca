@@ -8,9 +8,11 @@ import CriarPasta from './criar-pasta'
 import ModuloContent from './modulo-content'
 import type { DocCategory } from '@/lib/folder-actions'
 
+import type { ModuleKey } from '@/lib/roles'
+
 interface ModuloPageProps {
   category: DocCategory
-  accessKey: 'manuais' | 'estrategia' | 'financas'
+  accessKey: ModuleKey
   title: string
   subtitle: string
   accentColor: string
@@ -63,14 +65,21 @@ export default async function ModuloPage({
   try {
     const user = await prisma.user.findUnique({
       where: { email: r.email },
-      select: { accessGaleria: true, accessManuais: true, accessEstrategia: true, accessFinancas: true },
+      select: {
+        accessGaleria: true, accessManuais: true, accessEstrategia: true, accessFinancas: true,
+        accessDirecao: true, accessRH: true, accessEventos: true, accessCocoPro: true,
+      },
     })
     if (user) {
       const dbMap: Record<string, boolean | null> = {
-        galeria: user.accessGaleria,
-        manuais: user.accessManuais,
+        galeria:    user.accessGaleria,
+        manuais:    user.accessManuais,
         estrategia: user.accessEstrategia,
-        financas: user.accessFinancas,
+        financas:   user.accessFinancas,
+        direcao:    user.accessDirecao,
+        rh:         user.accessRH,
+        eventos:    user.accessEventos,
+        cocoPro:    user.accessCocoPro,
       }
       hasAccess = dbMap[accessKey] ?? r.access[accessKey]
     }

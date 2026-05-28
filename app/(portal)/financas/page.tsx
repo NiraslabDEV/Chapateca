@@ -5,10 +5,10 @@ export default function FinancasPage() {
     <ModuloPage
       category="FINANCEIRO"
       accessKey="financas"
-      title="Departamento Financeiro"
-      subtitle="Orçamentos, relatórios e documentação contabilística"
+      title="Contabilidade"
+      subtitle="Lançamentos, relatórios contabilísticos e contratos"
       accentColor="#8B3A3A"
-      accentBg="#F7ECEC"
+      accentBg="#F5E0E0"
       uploadHref="/financas/upload"
     />
   )

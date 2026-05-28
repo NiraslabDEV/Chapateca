@@ -6,12 +6,34 @@ import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { deleteFileFromDrive } from '@/lib/google-drive'
 
-export type DocCategory = 'FINANCEIRO' | 'MANUAIS' | 'ESTRATEGIA'
+export type DocCategory =
+  | 'FINANCEIRO'
+  | 'MANUAIS'
+  | 'ESTRATEGIA'
+  | 'DIRECAO'
+  | 'RH'
+  | 'EVENTOS'
+  | 'COCO_PRO'
 
 const CATEGORY_PATHS: Record<DocCategory, string> = {
   FINANCEIRO: '/financas',
-  MANUAIS: '/manuais',
+  MANUAIS:    '/manuais',
   ESTRATEGIA: '/estrategia',
+  DIRECAO:    '/direcao',
+  RH:         '/rh',
+  EVENTOS:    '/eventos',
+  COCO_PRO:   '/coco-pro',
+}
+
+/** Mapeia DocCategory → flag ModuleKey de acesso. */
+const CATEGORY_TO_MODULE: Record<DocCategory, keyof typeof import('@/lib/roles').ROLES[keyof typeof import('@/lib/roles').ROLES]['access']> = {
+  FINANCEIRO: 'financas',
+  MANUAIS:    'manuais',
+  ESTRATEGIA: 'estrategia',
+  DIRECAO:    'direcao',
+  RH:         'rh',
+  EVENTOS:    'eventos',
+  COCO_PRO:   'cocoPro',
 }
 
 async function ensureUser(roleKey: string) {
@@ -31,21 +53,27 @@ async function ensureUser(roleKey: string) {
 
 async function hasAccess(category: DocCategory, role: keyof typeof ROLES) {
   const r = ROLES[role]
-  const staticAccess =
-    category === 'FINANCEIRO' ? r.access.financas
-    : category === 'MANUAIS'    ? r.access.manuais
-    :                             r.access.estrategia
+  const moduleKey = CATEGORY_TO_MODULE[category]
+  const staticAccess = r.access[moduleKey]
 
   try {
     const u = await prisma.user.findUnique({
       where: { email: r.email },
-      select: { accessFinancas: true, accessManuais: true, accessEstrategia: true },
+      select: {
+        accessFinancas: true, accessManuais: true, accessEstrategia: true,
+        accessDirecao: true, accessRH: true, accessEventos: true, accessCocoPro: true,
+      },
     })
     if (!u) return staticAccess
     const dbValue =
-      category === 'FINANCEIRO' ? u.accessFinancas
-      : category === 'MANUAIS'    ? u.accessManuais
-      :                             u.accessEstrategia
+      moduleKey === 'financas'   ? u.accessFinancas
+      : moduleKey === 'manuais'    ? u.accessManuais
+      : moduleKey === 'estrategia' ? u.accessEstrategia
+      : moduleKey === 'direcao'    ? u.accessDirecao
+      : moduleKey === 'rh'         ? u.accessRH
+      : moduleKey === 'eventos'    ? u.accessEventos
+      : moduleKey === 'cocoPro'    ? u.accessCocoPro
+      : null
     return dbValue ?? staticAccess
   } catch {
     return staticAccess

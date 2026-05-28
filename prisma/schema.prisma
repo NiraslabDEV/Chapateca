@@ -23,9 +23,13 @@ model User {
   passwordHash      String?   // null = ainda não definiu senha própria
   mustResetPassword Boolean   @default(false)
   accessGaleria     Boolean?  // null = usa default do role
-  accessManuais     Boolean?
-  accessEstrategia  Boolean?
-  accessFinancas    Boolean?
+  accessManuais     Boolean?  // (UI: Procedimentos Internos e Regulamentos)
+  accessEstrategia  Boolean?  // (UI: Estratégia Financeira)
+  accessFinancas    Boolean?  // (UI: Contabilidade)
+  accessDirecao     Boolean?
+  accessRH          Boolean?
+  accessEventos     Boolean?
+  accessCocoPro     Boolean?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   uploads      FileLog[]

@@ -5,10 +5,10 @@ export default function ManuaisPage() {
     <ModuloPage
       category="MANUAIS"
       accessKey="manuais"
-      title="Manuais e Guias"
+      title="Procedimentos Internos e Regulamentos"
       subtitle="Documentação oficial, regulamentos e procedimentos internos"
       accentColor="#2D5220"
-      accentBg="#EBF5E6"
+      accentBg="#E8EDE2"
       uploadHref="/manuais/upload"
     />
   )

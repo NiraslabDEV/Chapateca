@@ -4,51 +4,17 @@ import Link from 'next/link'
 import { getRoleFromCookie, ROLES, type RoleKey } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
 import { getEffectiveAccess } from '@/lib/effective-access'
-import { BookOpen, Target, Wallet, Camera, Lock, ChevronRight, ImageIcon, CheckSquare, MapPin } from 'lucide-react'
+import { MODULOS } from '@/lib/modulos'
+import { BookOpen, Crown, TrendingUp, Wallet, Users, Camera, CalendarDays, Sparkles, Lock, ChevronRight, ImageIcon, CheckSquare, MapPin, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const MODULES = [
-  {
-    href: '/manuais',
-    title: 'Manuais e Guias',
-    desc: 'Documentação, regulamentos e procedimentos internos',
-    icon: BookOpen,
-    color: '#2D5220',
-    accent: '#4A7A32',
-    key: 'manuais' as const,
-    tag: 'Todos',
-  },
-  {
-    href: '/estrategia',
-    title: 'Gestão Estratégica',
-    desc: 'Planos estratégicos, relatórios de impacto e metas',
-    icon: Target,
-    color: '#1A5C8A',
-    accent: '#3A7CBF',
-    key: 'estrategia' as const,
-    tag: 'Direcção',
-  },
-  {
-    href: '/financas',
-    title: 'Departamento Financeiro',
-    desc: 'Orçamentos, relatórios financeiros e contratos',
-    icon: Wallet,
-    color: '#8B3A3A',
-    accent: '#D45555',
-    key: 'financas' as const,
-    tag: 'DAF',
-  },
-  {
-    href: '/galeria',
-    title: 'Galeria do Terreno',
-    desc: 'Fotos e vídeos das actividades e impacto no campo',
-    icon: Camera,
-    color: '#C8952A',
-    accent: '#E5B84A',
-    key: 'galeria' as const,
-    tag: 'Campo',
-  },
-]
+const ICONS: Record<string, LucideIcon> = {
+  BookOpen, Crown, TrendingUp, Wallet, Users, Camera, CalendarDays, Sparkles,
+}
+
+const DASHBOARD_MODULES = [...MODULOS]
+  .filter(m => m.visibleInDashboard)
+  .sort((a, b) => a.order - b.order)
 
 export default async function DashboardPage() {
   const store = await cookies()
@@ -216,10 +182,11 @@ export default async function DashboardPage() {
       </div>
 
       {/* Modules grid */}
-      <div className="grid grid-cols-2 gap-5 mb-12">
-        {MODULES.map(m => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+        {DASHBOARD_MODULES.map(m => {
           const locked = !access[m.key]
-          const Icon = m.icon
+          const Icon = ICONS[m.iconName] ?? BookOpen
+          const numberPrefix = String(m.order).padStart(2, '0')
           return (
             <Link key={m.href} href={locked ? '/acesso-negado' : m.href}
                   className={cn(
@@ -229,7 +196,7 @@ export default async function DashboardPage() {
                   )}>
               {/* top bar */}
               <div className="absolute top-0 left-0 right-0 h-[3px]"
-                   style={{ background: locked ? '#CCC' : `linear-gradient(90deg, ${m.color}, ${m.accent})` }} />
+                   style={{ background: locked ? '#CCC' : m.accentColor }} />
 
               {locked && (
                 <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-black/6 flex items-center justify-center">
@@ -237,23 +204,20 @@ export default async function DashboardPage() {
                 </div>
               )}
 
-              {(m as { urgent?: boolean }).urgent && !locked && (
-                <span className="absolute top-3.5 right-3.5 bg-red-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full tracking-wider animate-pulse">
-                  URGENTE
-                </span>
-              )}
-
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                   style={{ background: `${m.color}18` }}>
-                <Icon size={24} style={{ color: m.color }} />
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                     style={{ background: `${m.accentColor}18` }}>
+                  <Icon size={22} style={{ color: m.accentColor }} />
+                </div>
+                <span className="text-[11px] font-mono text-ink-soft mt-1">{numberPrefix}</span>
               </div>
 
-              <h3 className="font-display text-[22px] text-ink">{m.title}</h3>
-              <p className="text-[13px] text-ink-soft flex-1 leading-relaxed">{m.desc}</p>
+              <h3 className="font-display text-[20px] text-ink leading-tight">{m.label}</h3>
+              <p className="text-[12.5px] text-ink-soft flex-1 leading-relaxed">{m.description}</p>
 
-              <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center justify-between mt-2">
                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-parchment-2 text-ink-mid">
-                  {locked ? 'Sem acesso' : `Acesso · ${m.tag}`}
+                  {locked ? 'Sem acesso' : 'Aceder'}
                 </span>
                 {!locked && <ChevronRight size={16} className="text-ink-soft" />}
               </div>

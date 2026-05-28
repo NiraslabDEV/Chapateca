@@ -5,10 +5,10 @@ export default function EstrategiaPage() {
     <ModuloPage
       category="ESTRATEGIA"
       accessKey="estrategia"
-      title="Gestão Estratégica"
-      subtitle="Planos, relatórios de impacto e documentos de direcção"
+      title="Estratégia Financeira"
+      subtitle="Planos financeiros, orçamentos estratégicos e captação"
       accentColor="#1A5C8A"
-      accentBg="#E6F0F7"
+      accentBg="#E0EDF5"
       uploadHref="/estrategia/upload"
     />
   )

@@ -2,20 +2,33 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, BookOpen, Target, Wallet, Camera, CheckSquare, Settings, HelpCircle, Lock, LogOut, X, Moon, Sun } from 'lucide-react'
-import { ROLES, type RoleKey } from '@/lib/roles'
+import { Home, BookOpen, Crown, TrendingUp, Wallet, Users, Camera, CalendarDays, Sparkles, CheckSquare, Settings, HelpCircle, Lock, LogOut, X, Moon, Sun, type LucideIcon } from 'lucide-react'
+import { ROLES, type RoleKey, type ModuleKey } from '@/lib/roles'
 import type { EffectiveAccess } from '@/app/(portal)/layout'
+import { MODULOS } from '@/lib/modulos'
 import RoleBadge from '@/components/ui/role-badge'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 
-const NAV_ITEMS = [
-  { href: '/dashboard',  label: 'Início',           icon: Home,         key: null },
-  { href: '/manuais',    label: 'Manuais e Guias',  icon: BookOpen,     key: 'manuais'    as const },
-  { href: '/estrategia', label: 'Estratégica',       icon: Target,       key: 'estrategia' as const },
-  { href: '/financas',   label: 'Financeiro',        icon: Wallet,       key: 'financas'   as const },
-  { href: '/galeria',    label: 'Galeria Campo',     icon: Camera,       key: 'galeria'    as const },
-  { href: '/tarefas',    label: 'Tarefas',           icon: CheckSquare,  key: null },
+const ICONS: Record<string, LucideIcon> = {
+  BookOpen, Crown, TrendingUp, Wallet, Users, Camera, CalendarDays, Sparkles,
+}
+
+type NavItem = { href: string; label: string; icon: LucideIcon; key: ModuleKey | null }
+
+const SORTED_MODULOS = [...MODULOS]
+  .filter(m => m.visibleInSidebar)
+  .sort((a, b) => a.order - b.order)
+
+const NAV_ITEMS: NavItem[] = [
+  { href: '/dashboard', label: 'Início', icon: Home, key: null },
+  ...SORTED_MODULOS.map((m): NavItem => ({
+    href: m.href,
+    label: `${String(m.order).padStart(2, '0')}. ${m.short}`,
+    icon: ICONS[m.iconName] ?? BookOpen,
+    key: m.key,
+  })),
+  { href: '/tarefas', label: 'Tarefas', icon: CheckSquare, key: null },
 ]
 
 const SECONDARY = [

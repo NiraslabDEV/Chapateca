@@ -3,25 +3,37 @@ import { cookies } from 'next/headers'
 import { getRoleFromCookie, ROLES } from '@/lib/roles'
 import { prisma } from '@/lib/prisma'
 
+type ModuleKey = keyof typeof ROLES[keyof typeof ROLES]['access']
+
+const CATEGORY_TO_MODULE: Record<string, ModuleKey> = {
+  FINANCEIRO: 'financas', MANUAIS: 'manuais', ESTRATEGIA: 'estrategia',
+  DIRECAO: 'direcao', RH: 'rh', EVENTOS: 'eventos', COCO_PRO: 'cocoPro',
+}
+
 async function canAccessCategory(category: string, role: keyof typeof ROLES): Promise<boolean> {
   const r = ROLES[role]
-  const staticAccess =
-    category === 'FINANCEIRO' ? r.access.financas
-    : category === 'MANUAIS'    ? r.access.manuais
-    : category === 'ESTRATEGIA' ? r.access.estrategia
-    :                             false
+  const moduleKey = CATEGORY_TO_MODULE[category]
+  if (!moduleKey) return false
+  const staticAccess = r.access[moduleKey]
 
   try {
     const u = await prisma.user.findUnique({
       where: { email: r.email },
-      select: { accessFinancas: true, accessManuais: true, accessEstrategia: true },
+      select: {
+        accessFinancas: true, accessManuais: true, accessEstrategia: true,
+        accessDirecao: true, accessRH: true, accessEventos: true, accessCocoPro: true,
+      },
     })
     if (!u) return staticAccess
     const dbValue =
-      category === 'FINANCEIRO' ? u.accessFinancas
-      : category === 'MANUAIS'    ? u.accessManuais
-      : category === 'ESTRATEGIA' ? u.accessEstrategia
-      :                             null
+      moduleKey === 'financas'   ? u.accessFinancas
+      : moduleKey === 'manuais'    ? u.accessManuais
+      : moduleKey === 'estrategia' ? u.accessEstrategia
+      : moduleKey === 'direcao'    ? u.accessDirecao
+      : moduleKey === 'rh'         ? u.accessRH
+      : moduleKey === 'eventos'    ? u.accessEventos
+      : moduleKey === 'cocoPro'    ? u.accessCocoPro
+      : null
     return dbValue ?? staticAccess
   } catch {
     return staticAccess

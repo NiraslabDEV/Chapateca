@@ -1,12 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { ROLES, type RoleKey } from '@/lib/roles'
+import { ROLES, type RoleKey, type ModuleKey } from '@/lib/roles'
 
-export type EffectiveAccess = {
-  galeria:    boolean
-  manuais:    boolean
-  estrategia: boolean
-  financas:   boolean
-}
+export type EffectiveAccess = Record<ModuleKey, boolean>
 
 /**
  * Devolve o acesso EFECTIVO do utilizador a cada módulo:
@@ -22,7 +17,10 @@ export async function getEffectiveAccess(roleKey: RoleKey): Promise<EffectiveAcc
   try {
     const user = await prisma.user.findUnique({
       where: { email: r.email },
-      select: { accessGaleria: true, accessManuais: true, accessEstrategia: true, accessFinancas: true },
+      select: {
+        accessGaleria: true, accessManuais: true, accessEstrategia: true, accessFinancas: true,
+        accessDirecao: true, accessRH: true, accessEventos: true, accessCocoPro: true,
+      },
     })
     if (!user) return defaults
     return {
@@ -30,6 +28,10 @@ export async function getEffectiveAccess(roleKey: RoleKey): Promise<EffectiveAcc
       manuais:    user.accessManuais    ?? defaults.manuais,
       estrategia: user.accessEstrategia ?? defaults.estrategia,
       financas:   user.accessFinancas   ?? defaults.financas,
+      direcao:    user.accessDirecao    ?? defaults.direcao,
+      rh:         user.accessRH         ?? defaults.rh,
+      eventos:    user.accessEventos    ?? defaults.eventos,
+      cocoPro:    user.accessCocoPro    ?? defaults.cocoPro,
     }
   } catch {
     return defaults

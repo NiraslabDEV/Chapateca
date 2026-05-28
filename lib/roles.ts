@@ -15,6 +15,16 @@ export type RoleKey =
 
 export type DbRole = 'DIRECAO' | 'DAF' | 'COMUNICACAO' | 'CAMPO'
 
+export type ModuleKey =
+  | 'galeria'
+  | 'manuais'      // Procedimentos Internos e Regulamentos
+  | 'estrategia'   // Estratégia Financeira
+  | 'financas'     // Contabilidade
+  | 'direcao'
+  | 'rh'
+  | 'eventos'
+  | 'cocoPro'
+
 export interface RoleConfig {
   key: RoleKey
   dbRole: DbRole
@@ -26,16 +36,18 @@ export interface RoleConfig {
   email: string
   color: string
   bg: string
-  access: {
-    galeria: boolean
-    manuais: boolean
-    estrategia: boolean
-    financas: boolean
-  }
+  access: Record<ModuleKey, boolean>
 }
 
-const FULL_ACCESS = { galeria: true, manuais: true, estrategia: true, financas: true }
-const GALERIA_ONLY = { galeria: true, manuais: false, estrategia: false, financas: false }
+const FULL_ACCESS: Record<ModuleKey, boolean> = {
+  galeria: true, manuais: true, estrategia: true, financas: true,
+  direcao: true, rh: true, eventos: true, cocoPro: false,
+}
+const CONSTANCE_ACCESS: Record<ModuleKey, boolean> = { ...FULL_ACCESS, cocoPro: true }
+const GALERIA_ONLY: Record<ModuleKey, boolean> = {
+  galeria: true, manuais: false, estrategia: false, financas: false,
+  direcao: false, rh: false, eventos: true, cocoPro: false,
+}
 
 const ADMIN_COLOR = '#461882'
 const ADMIN_BG    = '#EDE8F7'
@@ -50,7 +62,7 @@ export const ROLES: Record<RoleKey, RoleConfig> = {
     name: 'Constance', initials: 'CO',
     email: 'constance@chapateca.org',
     color: ADMIN_COLOR, bg: ADMIN_BG,
-    access: FULL_ACCESS,
+    access: CONSTANCE_ACCESS,
   },
   SONIA: {
     key: 'SONIA', dbRole: 'DIRECAO', group: 'admin',
