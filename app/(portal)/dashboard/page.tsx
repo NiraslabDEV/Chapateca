@@ -98,7 +98,7 @@ export default async function DashboardPage() {
         where: { albumId: null },
         take: 8,
         orderBy: { createdAt: 'desc' },
-        include: { uploadedBy: true },
+        include: { uploadedBy: true, folder: { select: { name: true } } },
       }),
       prisma.fileLog.groupBy({
         by: ['location'],
@@ -131,14 +131,36 @@ export default async function DashboardPage() {
       }
     })
 
+    const CATEGORY_LABEL: Record<string, string> = {
+      FINANCEIRO: 'Departamento Financeiro',
+      MANUAIS:    'Manuais e Guias',
+      ESTRATEGIA: 'Gestão Estratégica',
+      MARKETING:  'Marketing',
+    }
+    const CATEGORY_HREF: Record<string, string> = {
+      FINANCEIRO: '/financas',
+      MANUAIS:    '/manuais',
+      ESTRATEGIA: '/estrategia',
+      MARKETING:  '/galeria?tab=marketing',
+    }
+
     const logItems: FeedItem[] = fileLogs.map(f => {
       const name = f.uploadedBy?.name ?? 'Equipa'
+      const cat = f.category
+      const isImage = f.fileType === 'IMAGE' || cat === 'MARKETING' || cat === 'FOTOS_TERRENO'
+      const noun = isImage ? 'imagem' : 'ficheiro'
+      const docTitle = f.activityName || f.fileName
+      const where = f.folder?.name
+        ? ` na pasta "${f.folder.name}"`
+        : CATEGORY_LABEL[cat]
+          ? ` em ${CATEGORY_LABEL[cat]}`
+          : f.location ? ` em ${f.location}` : ''
       return {
         id: `f-${f.id}`,
-        href: `/galeria`,
+        href: CATEGORY_HREF[cat] ?? '/galeria',
         uploaderName: name,
         uploaderInitials: initials(name),
-        description: `carregou 1 foto${f.location ? ` em ${f.location}` : ''}`,
+        description: `carregou ${noun} "${docTitle}"${where}`,
         date: f.createdAt,
         kind: 'upload',
       }
