@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Topbar from './topbar'
 import Sidebar from './sidebar'
+import LiveRefresh from './live-refresh'
 import type { RoleKey } from '@/lib/roles'
 import type { EffectiveAccess } from '@/app/(portal)/layout'
 import TaskPopup from '@/components/tarefas/task-popup'
@@ -74,6 +75,9 @@ export default function PortalLayoutClient({ role, effectiveAccess, pendingTask,
       </div>
 
       {pendingTask && <TaskPopup task={pendingTask} key={pendingTask.id} />}
+
+      {/* Polling silencioso a cada 20s para apanhar novas tarefas/mensagens */}
+      <LiveRefresh />
     </div>
   )
 }
