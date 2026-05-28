@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, MessageCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import TaskChat, { type ChatMessage, type ChatParty } from './task-chat'
@@ -41,12 +41,12 @@ interface Props {
   peer: ChatParty
   messages: ChatMessage[]
   unreadCount: number  // mensagens não lidas pelo utilizador actual
-  defaultOpen?: boolean
+  isOpen: boolean
+  onToggle: () => void
 }
 
-export default function TaskCardChat({ task, perspective, me, peer, messages, unreadCount, defaultOpen = false }: Props) {
+export default function TaskCardChat({ task, perspective, me, peer, messages, unreadCount, isOpen, onToggle }: Props) {
   const router = useRouter()
-  const [open, setOpen] = useState(defaultOpen || unreadCount > 0)
   const [doneLoading, startDone] = useTransition()
 
   const st = task.status as TaskStatus
@@ -54,10 +54,9 @@ export default function TaskCardChat({ task, perspective, me, peer, messages, un
   const canMarkDone = perspective === 'inbox' && st === 'received'
 
   const handleToggle = () => {
-    const next = !open
-    setOpen(next)
+    onToggle()
     // Quando abrir, marca como lidas
-    if (next && unreadCount > 0) {
+    if (!isOpen && unreadCount > 0) {
       markMessagesRead(task.id).then(() => router.refresh()).catch(() => {})
     }
   }
@@ -74,13 +73,26 @@ export default function TaskCardChat({ task, perspective, me, peer, messages, un
   const messageCount = messages.length + (task.body ? 1 : 0)
 
   return (
-    <div className="bg-white border border-sand-light rounded-2xl overflow-hidden">
+    <div
+      className={[
+        'border rounded-2xl overflow-hidden transition-all',
+        isOpen
+          ? 'border-[#461882]/40 shadow-[0_8px_28px_rgba(70,24,130,0.15)] bg-white'
+          : 'border-sand-light bg-white hover:border-[#461882]/25 hover:shadow-[0_2px_12px_rgba(22,20,18,0.06)]',
+      ].join(' ')}
+    >
       {/* Header — sempre visível */}
-      <div className="p-4 cursor-pointer hover:bg-parchment-2/30 transition-colors" onClick={handleToggle}>
+      <div
+        className={[
+          'p-4 cursor-pointer transition-colors',
+          isOpen ? 'bg-[#461882]/5' : 'hover:bg-parchment-2/40',
+        ].join(' ')}
+        onClick={handleToggle}
+      >
         <div className="flex items-start gap-3">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold text-white shadow-sm"
                  style={{ background: peer.color }}>
               {peer.initials}
             </div>
@@ -110,16 +122,38 @@ export default function TaskCardChat({ task, perspective, me, peer, messages, un
             <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${cfg.color}`}>
               {cfg.label}
             </span>
-            <div className="text-ink-soft">
-              {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <div className={isOpen ? 'text-[#461882]' : 'text-ink-soft'}>
+              {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </div>
           </div>
         </div>
       </div>
 
       {/* Chat expandido */}
-      {open && (
-        <div className="border-t border-sand-light flex flex-col" style={{ height: '480px' }}>
+      {isOpen && (
+        <div
+          className="flex flex-col border-t-2 border-[#461882]/15"
+          style={{
+            height: '480px',
+            background: 'linear-gradient(180deg, #F5F0FA 0%, #F9F6FC 40%, #FBF9FD 100%)',
+          }}
+        >
+          {/* Header da conversa */}
+          <div className="px-4 py-2.5 border-b border-[#461882]/10 bg-white/70 backdrop-blur-sm flex items-center gap-2.5 flex-shrink-0">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                 style={{ background: peer.color }}>
+              {peer.initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-semibold text-ink leading-tight">{peer.name}</div>
+              <div className="text-[10px] text-ink-soft font-mono">Conversa privada</div>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] text-ink-soft font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#461882]" />
+              {messageCount} {messageCount === 1 ? 'msg' : 'msgs'}
+            </div>
+          </div>
+
           <TaskChat
             taskId={task.id}
             me={me}
@@ -129,8 +163,9 @@ export default function TaskCardChat({ task, perspective, me, peer, messages, un
             initialCreatedAt={task.createdAt}
             initialFromEmail={task.fromEmail}
           />
+
           {canMarkDone && (
-            <div className="border-t border-sand-light bg-parchment/30 p-3 flex-shrink-0">
+            <div className="border-t border-green-200 bg-green-50/60 p-3 flex-shrink-0">
               <button
                 onClick={handleMarkDone}
                 disabled={doneLoading}

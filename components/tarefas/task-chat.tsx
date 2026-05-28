@@ -57,10 +57,10 @@ function Bubble({ msg, isMine, peer, me }: { msg: ChatMessage; isMine: boolean; 
       <div className={`flex flex-col max-w-[78%] ${isMine ? 'items-end' : 'items-start'}`}>
         <div
           className={[
-            'px-3.5 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words',
+            'px-3.5 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words shadow-sm',
             isMine
               ? 'bg-[#461882] text-white rounded-br-md'
-              : 'bg-parchment-2 text-ink rounded-bl-md',
+              : 'bg-white text-ink rounded-bl-md border border-[#461882]/10',
           ].join(' ')}
         >
           {msg.body}
@@ -163,7 +163,7 @@ export default function TaskChat({ taskId, me, peer, messages, initialBody, init
       </div>
 
       {/* Input */}
-      <div className="border-t border-sand-light bg-white p-3 flex-shrink-0">
+      <div className="border-t border-[#461882]/15 bg-white p-3 flex-shrink-0 shadow-[0_-2px_8px_rgba(70,24,130,0.04)]">
         {error && <p className="text-[11px] text-red-600 mb-2 px-1">{error}</p>}
         <div className="flex gap-2 items-end">
           <textarea
@@ -179,7 +179,7 @@ export default function TaskChat({ taskId, me, peer, messages, initialBody, init
           <button
             onClick={handleSend}
             disabled={!draft.trim() || isPending}
-            className="w-10 h-10 rounded-xl bg-[#461882] text-white flex items-center justify-center hover:bg-[#5a1fa3] disabled:opacity-40 transition-colors flex-shrink-0"
+            className="w-10 h-10 rounded-xl bg-[#461882] text-white flex items-center justify-center hover:bg-[#5a1fa3] disabled:opacity-40 transition-colors flex-shrink-0 shadow-[0_2px_8px_rgba(70,24,130,0.3)]"
           >
             {isPending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
           </button>
